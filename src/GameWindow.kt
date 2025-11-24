@@ -15,7 +15,7 @@ fun main() {
     window.defaultCloseOperation = JFrame.EXIT_ON_CLOSE // TODO: confirm exit
 }
 
-class GameWindow : JFrame("ChecksMate V0.1") {
+class GameWindow : JFrame("ChecksMate XVI V0.1") {
     val board = ChessBoard()
     init {
         val mainContainer = JPanel()
@@ -34,7 +34,7 @@ class GameWindow : JFrame("ChecksMate V0.1") {
 
 class ChessBoard : JPanel() {
     companion object {
-        const val DEBUG_TWOPLAYER = true
+        const val DEBUG_TWOPLAYER = false
 
         const val CELL_SIZE = 45
         const val BORDER_SIZE = 20
@@ -114,7 +114,7 @@ class ChessBoard : JPanel() {
 
     private val validMoves = MoveList()
 
-    private var _board = BoardSetups.TEST_ALL_PIECES
+    private var _board = BoardSetups.FIDE
     fun getBoard() = _board
     fun setBoard(value: Board) {
         _board = value

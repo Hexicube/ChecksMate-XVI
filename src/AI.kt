@@ -1,4 +1,6 @@
 import java.util.Random
+import kotlin.math.max
+import kotlin.math.min
 
 interface ChessAI {
     fun getName(): String
@@ -6,14 +8,65 @@ interface ChessAI {
     fun makeMove(board: Board): Move
 }
 
+data class MoveResult(var move: Move, val score: Int)
+class SearchHelpers {
+    companion object {
+        // TODO: killer moves
+        private val moveList = MoveList()
+        fun minimaxAlphaBeta(board: Board, depth: Int, alpha: Int, beta: Int, scoreFunc: (Board) -> Int, moveComparator: (Board, Move) -> Int): MoveResult {
+            if (depth == 0) return MoveResult(Move.NULL, scoreFunc(board))
+            if (board.isGameOver()) {
+                if (board.isWhiteWin()) return MoveResult(Move.NULL, 1000000)
+                if (board.isBlackWin()) return MoveResult(Move.NULL, -1000000)
+            }
+
+            var value: Int
+            var result: MoveResult
+            lateinit var bestMove: MoveResult
+            moveList.reset()
+            board.getMoves(moveList)
+            var a = alpha
+            var b = beta
+            if (board.isWhiteToMove) {
+                value = Int.MIN_VALUE
+                val moves = moveList.asArray().sortedByDescending { moveComparator(board, it) }
+                for (move in moves) {
+                    result = minimaxAlphaBeta(board.withMove(move), depth - 1, a, b, scoreFunc, moveComparator)
+                    if (result.score > value) {
+                        bestMove = MoveResult(move, result.score)
+                        value = result.score
+                        if (value >= b) break
+                        a = max(value, a)
+                    }
+                }
+                return bestMove
+            }
+            else {
+                value = Int.MAX_VALUE
+                val moves = moveList.asArray().sortedBy { moveComparator(board, it) }
+                for (move in moves) {
+                    result = minimaxAlphaBeta(board.withMove(move), depth - 1, a, b, scoreFunc, moveComparator)
+                    result.move = move
+                    if (result.score < value) {
+                        bestMove = MoveResult(move, result.score)
+                        value = result.score
+                        if (value <= a) break
+                        b = min(value, b)
+                    }
+                }
+                return bestMove
+            }
+        }
+    }
+}
+
 class AI1 : ChessAI {
-    // TODO: increase depth to 6 ply when optimised
     /*
     AI Level 1:
-    - Simple minimax depth 4 ply
-    - Evaluation is purely based on piece values, preferring to get it earlier if possible
-    - Pieces in pocket are valued slightly higher, results in AI using them to prevent losing material
-    - Random move chosen from best options
+    - Simple minimax depth 6 ply with alpha-beta pruning for speed
+    - Evaluation is purely based on piece values
+    - Pieces in pocket are valued slightly higher, results in AI only using them to prevent losing material
+    - Random value added to prevent shuffling
     */
 
     companion object {
@@ -52,46 +105,11 @@ class AI1 : ChessAI {
     override fun getName() = "AI Level 1"
     override fun getDifficulty() = 1
     override fun makeMove(board: Board): Move {
-        return doMinimax(board, 4).first
+        return SearchHelpers.minimaxAlphaBeta(board, 6, Int.MIN_VALUE, Int.MAX_VALUE, getBoardScore, scoreMove).move
     }
 
     private val rng = Random()
-    private fun doMinimax(board: Board, depth: Int): Pair<Move, Int> {
-        // TODO: this is horrendously slow
-
-        if (board.isGameOver()) {
-            if (board.isWhiteWin()) return Pair(Move.NULL, 1000000 + depth)
-            if (board.isBlackWin())return Pair(Move.NULL, -(1000000 + depth))
-            throw IllegalStateException()
-        }
-
-        if (depth <= 0) return Pair(Move.NULL, getBoardScore(board))
-
-        val moves = MoveList()
-        board.getMoves(moves)
-        val bestMoves = ArrayList<Move>()
-        var bestScore = if (board.isWhiteToMove) -10000000 else 10000000
-        for (a in 0 until moves.used) {
-            val newBoard = board.withMove(moves[a])
-            val result = doMinimax(newBoard, depth - 1)
-            if (result.second == bestScore) bestMoves.add(moves[a])
-            else {
-                if (result.second > bestScore && board.isWhiteToMove) {
-                    bestMoves.clear()
-                    bestMoves.add(moves[a])
-                    bestScore = result.second
-                }
-                if (result.second < bestScore && !board.isWhiteToMove) {
-                    bestMoves.clear()
-                    bestMoves.add(moves[a])
-                    bestScore = result.second
-                }
-            }
-        }
-        return Pair(bestMoves[rng.nextInt(bestMoves.size)], bestScore)
-    }
-
-    private fun getBoardScore(board: Board): Int {
+    private val getBoardScore: (Board) -> Int = { board ->
         var score = 0
         for (a in 0 until board.state.size) {
             val piece = board.state[a] ?: continue
@@ -103,6 +121,28 @@ class AI1 : ChessAI {
             val worth = PIECE_WORTH[piece.type]!! + 15 // slight value to keeping pocketed
             if (piece.isWhite) score += worth else score -= worth
         }
-        return score
+        score += rng.nextInt(10) // noise to shuffle moves (will push A pawn and shuffle rook otherwise)
+        score
+    }
+
+    private val scoreMove: (Board, Move) -> Int = { board, move ->
+        if (move.start < 0) {
+            // using a pocket
+            if (move.start < -3) 15 else -15
+        }
+        else {
+            var change = 0
+            if (move.promote != null) {
+                // promoting
+                val diff = PIECE_WORTH[move.promote]!! - PIECE_WORTH[board.state[move.start]!!.type]!!
+                if (board.isWhiteToMove) change += diff else change -= diff
+            }
+            if (move.capture != -1) {
+                // capture
+                val piece = board.state[move.capture]!!
+                if (piece.isWhite) change -= PIECE_WORTH[piece.type]!! else change += PIECE_WORTH[piece.type]!!
+            }
+            change
+        }
     }
 }
