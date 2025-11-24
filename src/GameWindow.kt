@@ -16,7 +16,8 @@ fun main() {
 }
 
 class GameWindow : JFrame("ChecksMate XVI V0.1") {
-    val board = ChessBoard()
+    val scoreLabel = JLabel("AI score estimate: ?")
+    val board = ChessBoard(scoreLabel)
     init {
         val mainContainer = JPanel()
         mainContainer.layout = BoxLayout(mainContainer, BoxLayout.X_AXIS)
@@ -24,7 +25,11 @@ class GameWindow : JFrame("ChecksMate XVI V0.1") {
         // left panel: AP stuff
 
         // main panel: game board + pocket pieces
-        mainContainer.add(board)
+        val boardContainer = JPanel()
+        boardContainer.layout = BoxLayout(boardContainer, BoxLayout.Y_AXIS)
+        boardContainer.add(scoreLabel)
+        boardContainer.add(board)
+        mainContainer.add(boardContainer)
 
         // right panel: list of checks
 
@@ -32,7 +37,7 @@ class GameWindow : JFrame("ChecksMate XVI V0.1") {
     }
 }
 
-class ChessBoard : JPanel() {
+class ChessBoard(val scoreLabel: JLabel) : JPanel() {
     companion object {
         const val DEBUG_TWOPLAYER = false
 
@@ -48,6 +53,7 @@ class ChessBoard : JPanel() {
         val CELL_MOVETO = Color(150, 255, 255)
         val CELL_CAPTURE = Color(255, 150, 150)
         val CELL_SPECIALMOVE = Color(100, 255, 100)
+        val CELL_LASTMOVE = Color(255, 255, 255)
 
         // TODO: make the images
         val PIECE_ICONS_WHITE = mapOf(
@@ -135,7 +141,8 @@ class ChessBoard : JPanel() {
         if (!_board.isWhiteToMove) Thread {
             val theAI = AI1()
             val move = theAI.makeMove(_board)
-            setBoard(_board.withMove(move))
+            setBoard(_board.withMove(move.move))
+            scoreLabel.text = "AI score estimate: ${-move.score}" // AI is black
         }.start()
     }
 
@@ -261,15 +268,18 @@ class ChessBoard : JPanel() {
     override fun getPreferredSize() = Dimension(CELL_SIZE * 17 + BORDER_SIZE * 3, CELL_SIZE * 16 + BORDER_SIZE * 2)
 
     fun drawCell(g: Graphics, x: Int, y: Int, boardX: Int, boardY: Int) {
-        //g.color = if ((boardX + boardY) % 2 == 0) CELL_LIGHT else CELL_DARK
-        //g.fillRect(x, y, CELL_SIZE, CELL_SIZE)
+        val cell = boardY * _board.width + boardX
+        if (_board.priorMove.end == cell) {
+            g.color = CELL_LASTMOVE
+            g.fillRect(x, y, CELL_SIZE, CELL_SIZE)
+        }
         if (selectY != -1) {
             if (selectX == boardX && selectY == boardY) {
                 g.color = CELL_HIGHLIGHT
                 g.fillRect(x, y, CELL_SIZE, CELL_SIZE)
             }
             else {
-                val moves = validMoves.asArray().filter { it.end == boardY * _board.width + boardX }
+                val moves = validMoves.asArray().filter { it.end == cell }
                 val relevant = if (selectX == -1) moves.filter { it.start == -selectY } else moves.filter { it.start == selectY * _board.width + selectX }
                 if (relevant.size > 1) {
                     g.color = CELL_SPECIALMOVE
@@ -283,7 +293,7 @@ class ChessBoard : JPanel() {
                 }
             }
         }
-        val piece = _board.state[boardY * _board.width + boardX]
+        val piece = _board.state[cell]
         if (piece != null) drawPiece(g, piece, x, y)
     }
 

@@ -6,7 +6,7 @@ data class Move(val start: Int, val end: Int, val capture: Int = -1, val promote
     }
 }
 
-class Board(val width: Int, val height: Int, val state: Array<Piece?>, val pockets: Array<Piece?>, val isWhiteToMove: Boolean, val curPly: Int, val priorMove: Move?, val promoteOptions: Set<PieceType>) {
+class Board(val width: Int, val height: Int, val state: Array<Piece?>, val pockets: Array<Piece?>, val isWhiteToMove: Boolean, val curPly: Int, val priorMove: Move, val promoteOptions: Set<PieceType>) {
     val numPieceTypes = Array(10) { 0 }
 
     private val pawnSkipX: Int
@@ -882,7 +882,7 @@ class Board(val width: Int, val height: Int, val state: Array<Piece?>, val pocke
     companion object {
         fun blankBoard(width: Int, height: Int, promoteOptions: Set<PieceType>): Board {
             val state = Array<Piece?>(width * height) { null }
-            return Board(width, height, state, Array(6) { null }, true, 0, null, promoteOptions)
+            return Board(width, height, state, Array(6) { null }, true, 0, Move.NULL, promoteOptions)
         }
 
         fun boardWithPieces(width: Int, height: Int, promoteOptions: Set<PieceType>, vararg pieces: PieceWithPos): Board {
@@ -894,7 +894,7 @@ class Board(val width: Int, val height: Int, val state: Array<Piece?>, val pocke
                     throw IllegalArgumentException("Cell already occupied")
                 state[piece.y * width + piece.x] = piece.piece
             }
-            return Board(width, height, state, Array(6) { null }, true, 0, null, promoteOptions)
+            return Board(width, height, state, Array(6) { null }, true, 0, Move.NULL, promoteOptions)
         }
 
         fun boardFromString(str: String, promoteOptions: Set<PieceType>): Board {
@@ -917,7 +917,7 @@ class Board(val width: Int, val height: Int, val state: Array<Piece?>, val pocke
                     state[y * width + x] = Piece(piece, isWhite, false, "") // TODO: identifiers
                 }
             }
-            return Board(width, height, state, Array(6) { null }, true, 0, null, promoteOptions)
+            return Board(width, height, state, Array(6) { null }, true, 0, Move.NULL, promoteOptions)
         }
     }
 }

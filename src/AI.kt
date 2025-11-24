@@ -5,7 +5,7 @@ import kotlin.math.min
 interface ChessAI {
     fun getName(): String
     fun getDifficulty(): Int
-    fun makeMove(board: Board): Move
+    fun makeMove(board: Board): MoveResult
 }
 
 data class MoveResult(var move: Move, val score: Int)
@@ -104,8 +104,8 @@ class AI1 : ChessAI {
 
     override fun getName() = "AI Level 1"
     override fun getDifficulty() = 1
-    override fun makeMove(board: Board): Move {
-        return SearchHelpers.minimaxAlphaBeta(board, 6, Int.MIN_VALUE, Int.MAX_VALUE, getBoardScore, scoreMove).move
+    override fun makeMove(board: Board): MoveResult {
+        return SearchHelpers.minimaxAlphaBeta(board, 4, Int.MIN_VALUE, Int.MAX_VALUE, getBoardScore, scoreMove)
     }
 
     private val rng = Random()
