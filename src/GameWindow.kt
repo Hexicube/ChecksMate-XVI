@@ -279,7 +279,7 @@ class ChessBoard(val frame: GameWindow) : JPanel() {
                                 selectY = -1
                                 if (_board.isWhiteToMove) LocationHelper.examineMove(_board, chosen)
                                 setBoard(_board.withMove(chosen))
-                                if (!_board.isWhiteToMove) LocationHelper.examineBoardPostMove(_board)
+                                if (!_board.isWhiteToMove) LocationHelper.examineBoardPostMove(_board, currentBoardType)
                             }
                         }
                         else if (moveOptions.size == 1) {
@@ -287,7 +287,7 @@ class ChessBoard(val frame: GameWindow) : JPanel() {
                             selectY = -1
                             if (_board.isWhiteToMove) LocationHelper.examineMove(_board, moveOptions[0])
                             setBoard(_board.withMove(moveOptions[0]))
-                            if (!_board.isWhiteToMove) LocationHelper.examineBoardPostMove(_board)
+                            if (!_board.isWhiteToMove) LocationHelper.examineBoardPostMove(_board, currentBoardType)
                         }
                     }
                 }

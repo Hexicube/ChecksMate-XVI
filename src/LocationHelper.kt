@@ -40,8 +40,17 @@ class LocationHelper {
 
         val ALL_CHECKS = PIECES union THREATS union STATES union PLACES union SURVIVAL union OTHER
 
+        fun getCurrentBoardLocation(board: Board): String {
+            return when (board) {
+                BoardSetups.MINI_BOARD -> "Mini Board"
+                BoardSetups.FIDE -> "FIDE Board"
+                BoardSetups.WIDE -> "Wide Board"
+                else -> throw NotImplementedError()
+            }
+        }
+
         fun examineBoardPreMove(board: Board) {
-            // used to check for survival
+            // survival
             if (!board.isGameOver()) {
                 val locStr = "Survive: ${board.curPly / 2} Turns"
                 if (SURVIVAL.contains(locStr)) collectLocation(locStr)
@@ -57,15 +66,36 @@ class LocationHelper {
             }
         }
 
-        fun examineBoardPostMove(board: Board) {
-            // used to check for threats, forks, position of pieces, wins
+        fun examineBoardPostMove(board: Board, startBoard: Board) {
+            // win
             if (board.isGameOver()) {
                 if (board.isWhiteWin()) {
-                    // TODO: check what board is in play and award that location
+                    val boardLoc = getCurrentBoardLocation(startBoard)
+                    collectLocation("Win: $boardLoc")
                 }
             }
+            // king move to place
             // TODO: check king position
-            // TODO: look for threats and forks
+            // threaten and fork
+            val withNull = board.nullMove()
+            val moveList = MoveList()
+            withNull.getMoves(moveList)
+            val moves = moveList.asArray()
+            for (move in moves) {
+                if (move.capture != -1) {
+                    val piece = withNull.state[move.capture]!!
+                    if (piece.isWhite) continue
+                    val type = when(piece.type.type) {
+                        PieceClass.PAWN -> "Pawn"
+                        PieceClass.MINOR -> "Minor"
+                        PieceClass.MAJOR -> "Major"
+                        PieceClass.QUEEN -> "Queen"
+                        PieceClass.KING -> "King"
+                    }
+                    collectLocation("Threaten: $type")
+                }
+            }
+            // TODO: look for forks
         }
 
         fun needsToCollectPiece(piece: Piece): Boolean {
@@ -113,13 +143,8 @@ class LocationHelper {
                     return LocationState.AVAILABLE
                 }
                 "Win" -> {
-                    val isCurrentBoard = startBoard == when (locName) {
-                        "Mini Board" -> BoardSetups.MINI_BOARD
-                        "FIDE Board" -> BoardSetups.FIDE
-                        "Wide Board" -> BoardSetups.WIDE
-                        else -> throw NotImplementedError()
-                    }
-                    if (!isCurrentBoard) return LocationState.UNREACHABLE
+                    val boardLoc = getCurrentBoardLocation(startBoard)
+                    if (boardLoc != locName) return LocationState.UNREACHABLE
                     // TODO: determine if hard
                     return LocationState.AVAILABLE
                 }
