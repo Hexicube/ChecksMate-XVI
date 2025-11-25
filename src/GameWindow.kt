@@ -120,7 +120,7 @@ class ChessBoard(val scoreLabel: JLabel) : JPanel() {
 
     private val validMoves = MoveList()
 
-    private var _board = BoardSetups.FIDE
+    private var _board = BoardSetups.WIDE
     fun getBoard() = _board
     fun setBoard(value: Board) {
         _board = value
@@ -150,13 +150,13 @@ class ChessBoard(val scoreLabel: JLabel) : JPanel() {
     private var selectY = -1
 
     init {
-        _board.pockets[0] = Piece(PieceType.PAWN, true, false, "")
-        _board.pockets[1] = Piece(PieceType.BISHOP, true, false, "")
-        _board.pockets[2] = Piece(PieceType.QUEEN, true, false, "")
+        //_board.pockets[0] = Piece(PieceType.PAWN, true, false, "")
+        //_board.pockets[1] = Piece(PieceType.BISHOP, true, false, "")
+        //_board.pockets[2] = Piece(PieceType.QUEEN, true, false, "")
 
-        _board.pockets[3] = Piece(PieceType.PAWN, false, false, "")
-        _board.pockets[4] = Piece(PieceType.BISHOP, false, false, "")
-        _board.pockets[5] = Piece(PieceType.QUEEN, false, false, "")
+        //_board.pockets[3] = Piece(PieceType.PAWN, false, false, "")
+        //_board.pockets[4] = Piece(PieceType.BISHOP, false, false, "")
+        //_board.pockets[5] = Piece(PieceType.QUEEN, false, false, "")
 
         addMouseListener(object : MouseListener {
             override fun mouseClicked(p0: MouseEvent?) {}
