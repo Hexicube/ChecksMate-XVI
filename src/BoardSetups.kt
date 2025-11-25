@@ -6,7 +6,7 @@ class BoardSetups {
             PieceWithPos(Piece(PieceType.PAWN, true, false, ""), 0, 1),
             PieceWithPos(Piece(PieceType.BEROLINA, true, false, ""), 1, 1),
             PieceWithPos(Piece(PieceType.SOLDIER, true, false, ""), 2, 1),
-            //PieceWithPos(Piece(PieceType.SERGEANT, true, false, ""), 3, 1),
+            PieceWithPos(Piece(PieceType.SERGEANT, true, false, ""), 3, 1),
             // white minors
             PieceWithPos(Piece(PieceType.KNIGHT, true, false, ""), 4, 1),
             PieceWithPos(Piece(PieceType.BISHOP, true, false, ""), 5, 1),

@@ -5,7 +5,7 @@ A chess game for Archipelago, featuring:
   - Pawns:
     - Berolina (moves diagonally, attacks forward)
     - Soldier (moves and attacks forward)
-    - TODO: Sergeant (moves and attacks forwards and diagonally)
+    - Sergeant (moves and attacks forwards and diagonally)
   - Minors:
     - Camel (3,1 jumper)
     - Cleric (Bishop + 2,0 jumper)
@@ -31,7 +31,6 @@ A chess game for Archipelago, featuring:
 ## TODO List
 
 - Implement proper AI (currently has a 4 ply depth engine with basic piece value sum evaluation for testing)
-- Add Sergeant move generation
 - Come up with starting positions for the AI for various board sizes
   - Also pick what board sizes to use, 16x16 might be too big
 - Implement a board editor for setting up pieces/pockets prior to starting, with a cost allowance (pockets are +2 cost)

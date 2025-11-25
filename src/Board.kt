@@ -312,7 +312,7 @@ class Board(val width: Int, val height: Int, val state: Array<Piece?>, val pocke
                             // en-passant
                             end = endY * width + x
                             if (pawnSkipX == x && pawnSkipY == endY) {
-                                hit = state[priorMove!!.end]
+                                hit = state[priorMove.end]
                                 cap = priorMove.end
                             }
                         }
@@ -327,7 +327,72 @@ class Board(val width: Int, val height: Int, val state: Array<Piece?>, val pocke
                     }
                     PieceType.SERGEANT -> {
                         // forward and diagonal
-                        TODO()
+                        // forward only
+                        val endY: Int
+                        val doubleY: Int
+                        var end: Int
+                        var cap: Int
+                        if (isWhiteToMove) {
+                            if ((y + 1) >= height) continue
+                            endY = y + 1
+                            doubleY = y + 2
+                        }
+                        else {
+                            if (y <= 0) continue
+                            endY = y - 1
+                            doubleY = y - 2
+                        }
+                        for (dx in -1 .. 1) {
+                            if (x + dx < 0 || x + dx >= width) continue
+                            end = endY * width + x + dx
+                            cap = end
+                            hit = state[cap]
+                            if (hit != null) {
+                                if (hit.isWhite != isWhiteToMove) {
+                                    if (endY == 0 || endY == height - 1) {
+                                        for (promote in promoteOptions) {
+                                            outList += Move(y * width + x, end, cap, promote = promote)
+                                        }
+                                    }
+                                    else outList += Move(y * width + x, end, cap)
+                                }
+                            }
+                            else {
+                                if (endY == 0 || endY == height - 1) {
+                                    for (promote in promoteOptions) {
+                                        outList += Move(y * width + x, end, promote = promote)
+                                    }
+                                }
+                                else outList += Move(y * width + x, end)
+                                // en-passant
+                                if (pawnSkipX == x + dx && pawnSkipY == endY) {
+                                    hit = state[priorMove.end]!!
+                                    cap = priorMove.end
+                                    if (hit.isWhite != isWhiteToMove) {
+                                        if (endY == 0 || endY == height - 1) {
+                                            for (promote in promoteOptions) {
+                                                outList += Move(y * width + x, end, cap, promote = promote)
+                                            }
+                                        }
+                                        else outList += Move(y * width + x, end, cap)
+                                    }
+                                }
+                                // two step
+                                if (!piece.hasMoved) {
+                                    if (x + dx + dx >= 0 && x + dx + dx < width) {
+                                        end = doubleY * width + x + dx + dx
+                                        if (state[end] == null) {
+                                            if (doubleY == 0 || doubleY == height - 1) {
+                                                for (promote in promoteOptions) {
+                                                    outList += Move(y * width + x, end, promote = promote)
+                                                }
+                                            }
+                                            else outList += Move(y * width + x, end)
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                     // fairy minors
                     PieceType.CAMEL -> {
