@@ -116,6 +116,8 @@ class ChessBoard(val scoreLabel: JLabel) : JPanel() {
             "General" to ImageIO.read(File("images/black/black.png")),
             "Royal Queen" to ImageIO.read(File("images/black/black.png"))
         )
+
+        val CAPTURE = ImageIO.read(File("images/capture.png"))
     }
 
     private val validMoves = MoveList()
@@ -127,6 +129,9 @@ class ChessBoard(val scoreLabel: JLabel) : JPanel() {
         validMoves.reset()
         _board.getMoves(validMoves)
         size = preferredSize
+
+        if (_board.isWhiteToMove) LocationHelper.examineBoardPreMove(_board)
+
         repaint()
 
         if (_board.isGameOver()) {
@@ -247,13 +252,17 @@ class ChessBoard(val scoreLabel: JLabel) : JPanel() {
                                 val chosen = moveMap.entries.first { it.value == selected }.key
                                 selectX = -1
                                 selectY = -1
+                                if (_board.isWhiteToMove) LocationHelper.examineMove(_board, chosen)
                                 setBoard(_board.withMove(chosen))
+                                if (!_board.isWhiteToMove) LocationHelper.examineBoardPostMove(_board)
                             }
                         }
                         else if (moveOptions.size == 1) {
                             selectX = -1
                             selectY = -1
+                            if (_board.isWhiteToMove) LocationHelper.examineMove(_board, moveOptions[0])
                             setBoard(_board.withMove(moveOptions[0]))
+                            if (!_board.isWhiteToMove) LocationHelper.examineBoardPostMove(_board)
                         }
                     }
                 }
@@ -300,7 +309,7 @@ class ChessBoard(val scoreLabel: JLabel) : JPanel() {
     fun drawPiece(g: Graphics, piece: Piece, x: Int, y: Int) {
         val image = (if (piece.isWhite) PIECE_ICONS_WHITE else PIECE_ICONS_BLACK)[piece.type.niceName]
         g.drawImage(image, x, y, CELL_SIZE, CELL_SIZE, null)
-        // TODO: draw location marker if relevant
+        if (LocationHelper.needsToCollectPiece(piece)) g.drawImage(CAPTURE, x, y, CELL_SIZE, CELL_SIZE, null)
     }
 
     override fun paint(g: Graphics?) {
