@@ -4,6 +4,8 @@ import java.awt.Graphics
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
 import java.io.File
+import java.util.Timer
+import java.util.TimerTask
 import javax.imageio.ImageIO
 import javax.swing.*
 
@@ -17,7 +19,8 @@ fun main() {
 
 class GameWindow : JFrame("ChecksMate XVI V0.1") {
     val scoreLabel = JLabel("AI score estimate: ?")
-    val board = ChessBoard(scoreLabel)
+    val board = ChessBoard(this)
+    val checkList = JPanel() // TODO: nicer panel with fixed size
     init {
         val mainContainer = JPanel()
         mainContainer.layout = BoxLayout(mainContainer, BoxLayout.X_AXIS)
@@ -32,12 +35,34 @@ class GameWindow : JFrame("ChecksMate XVI V0.1") {
         mainContainer.add(boardContainer)
 
         // right panel: list of checks
+        checkList.layout = BoxLayout(checkList, BoxLayout.Y_AXIS)
+        refreshChecks()
+        mainContainer.add(checkList)
 
         contentPane = mainContainer
     }
+
+    fun refreshChecks() {
+        checkList.removeAll()
+        for (check in LocationHelper.ALL_CHECKS) {
+            val state = LocationHelper.getLocationState(board.getBoard(), check)
+            val col = when (state) {
+                LocationState.UNREACHABLE -> Color(125, 125, 125)
+                LocationState.HARD -> Color(255, 175, 175)
+                LocationState.AVAILABLE -> Color(255, 255, 150)
+                LocationState.COLLECTED -> Color(150, 255, 150)
+            }
+            // TODO: tooltips on hover to explain locations
+            val label = JLabel(check)
+            label.isOpaque = true
+            label.background = col
+            checkList.add(label)
+        }
+        checkList.validate()
+    }
 }
 
-class ChessBoard(val scoreLabel: JLabel) : JPanel() {
+class ChessBoard(val frame: GameWindow) : JPanel() {
     companion object {
         const val DEBUG_TWOPLAYER = false
 
@@ -122,7 +147,7 @@ class ChessBoard(val scoreLabel: JLabel) : JPanel() {
 
     private val validMoves = MoveList()
 
-    private var _board = BoardSetups.WIDE
+    private var _board = BoardSetups.FIDE
     fun getBoard() = _board
     fun setBoard(value: Board) {
         _board = value
@@ -132,6 +157,7 @@ class ChessBoard(val scoreLabel: JLabel) : JPanel() {
 
         if (_board.isWhiteToMove) LocationHelper.examineBoardPreMove(_board)
 
+        frame.refreshChecks()
         repaint()
 
         if (_board.isGameOver()) {
@@ -139,6 +165,12 @@ class ChessBoard(val scoreLabel: JLabel) : JPanel() {
             if (_board.isWhiteWin()) println("White wins!")
             else if (_board.isBlackWin()) println("Black wins!")
             else println("Nobody wins???")
+            // reset game after delay
+            Timer().schedule(object : TimerTask() {
+                override fun run() {
+                    setBoard(BoardSetups.FIDE)
+                }
+            }, 3000)
             return
         }
 
@@ -147,7 +179,7 @@ class ChessBoard(val scoreLabel: JLabel) : JPanel() {
             val theAI = AI1()
             val move = theAI.makeMove(_board)
             setBoard(_board.withMove(move.move))
-            scoreLabel.text = "AI score estimate: ${-move.score}" // AI is black
+            frame.scoreLabel.text = "AI score estimate: ${-move.score}" // AI is black
         }.start()
     }
 

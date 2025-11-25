@@ -49,3 +49,4 @@ A chess game for Archipelago, featuring:
     - Attacking valuable pieces
 - Modify board renderer to show various locations that are available (such as an attack indicator on any piece that is a location)
 - Get images for the remaining fairy pieces that lack one
+- Help window to explain how pieces move, what locations there are, and what items will do when received

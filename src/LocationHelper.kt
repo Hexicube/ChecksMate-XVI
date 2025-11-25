@@ -1,3 +1,7 @@
+enum class LocationState {
+    UNREACHABLE, HARD, AVAILABLE, COLLECTED
+}
+
 class LocationHelper {
     companion object {
         val PIECES = listOf(
@@ -34,6 +38,8 @@ class LocationHelper {
             // TODO: larger boards
         )
 
+        val ALL_CHECKS = PIECES union THREATS union STATES union PLACES union SURVIVAL union OTHER
+
         fun examineBoardPreMove(board: Board) {
             // used to check for survival
             if (!board.isGameOver()) {
@@ -69,7 +75,43 @@ class LocationHelper {
             return !collected.contains(locStr)
         }
 
-        // TODO: functions to find what checks are in logic and out of logic
+        fun getLocationState(board: Board, location: String): LocationState {
+            if (collected.contains(location)) return LocationState.COLLECTED
+            val locType = location.substringBefore(':')
+            when (locType) {
+                "Capture" -> {
+                    val piece = location.substring(location.indexOf(':') + 2)
+                    if (board.state.any { it != null && !it.isWhite && it.identifier == piece })
+                        return LocationState.AVAILABLE
+                    return LocationState.UNREACHABLE
+                }
+                "Threaten" -> {
+                    // TODO: determine if available or hard
+                    return LocationState.AVAILABLE
+                }
+                "False Fork" -> {
+                    // TODO: determine if available or hard
+                    return LocationState.AVAILABLE
+                }
+                "True Fork" -> {
+                    // TODO: determine if available or hard
+                    return LocationState.HARD
+                }
+                "King" -> {
+                    // move king to specific places
+                    return LocationState.AVAILABLE
+                }
+                "Survive" -> {
+                    // TODO: determine if available or hard
+                    return LocationState.AVAILABLE
+                }
+                "Win" -> {
+                    // TODO: check on correct board
+                    return LocationState.AVAILABLE
+                }
+                else -> throw NotImplementedError()
+            }
+        }
 
         val collected = ArrayList<String>()
         fun collectLocation(location: String) {
