@@ -22,7 +22,7 @@ class Board(val width: Int, val height: Int, val state: Array<Piece?>, val pocke
 
         // check if the last move is eligible for en-passant capture
         // NOTE: generalised to work with any pawn that moves two spaces
-        if (priorMove != null && priorMove.start >= 0) {
+        if (priorMove.end != -1) {
             // verify the piece is an opposing basic pawn
             piece = state[priorMove.end]
             // NOTE: can be null from castling
@@ -120,7 +120,7 @@ class Board(val width: Int, val height: Int, val state: Array<Piece?>, val pocke
                             if (hit == null) {
                                 // en-passant
                                 if (pawnSkipX == x - 1 && pawnSkipY == endY) {
-                                    hit = state[priorMove!!.end]
+                                    hit = state[priorMove.end]
                                     cap = priorMove.end
                                 }
                             }
@@ -140,7 +140,7 @@ class Board(val width: Int, val height: Int, val state: Array<Piece?>, val pocke
                             if (hit == null) {
                                 // en-passant
                                 if (pawnSkipX == x + 1 && pawnSkipY == endY) {
-                                    hit = state[priorMove!!.end]
+                                    hit = state[priorMove.end]
                                     cap = priorMove.end
                                 }
                             }
@@ -213,7 +213,7 @@ class Board(val width: Int, val height: Int, val state: Array<Piece?>, val pocke
                         if (hit == null) {
                             // en-passant
                             if (pawnSkipX == x && pawnSkipY == endY) {
-                                hit = state[priorMove!!.end]
+                                hit = state[priorMove.end]
                                 cap = priorMove.end
                             }
                         }
@@ -455,7 +455,6 @@ class Board(val width: Int, val height: Int, val state: Array<Piece?>, val pocke
                     PieceType.CROWNQUEEN -> {
                         getQueenMoves(outList, x, y, isWhiteToMove)
                     }
-                    else -> throw NotImplementedError()
                 }
                 // castling (handled separately to cover all king types)
                 if (!piece.hasMoved && piece.type.type == PieceClass.KING) {
@@ -945,12 +944,7 @@ class Board(val width: Int, val height: Int, val state: Array<Piece?>, val pocke
     }
 
     companion object {
-        fun blankBoard(width: Int, height: Int, promoteOptions: Set<PieceType>): Board {
-            val state = Array<Piece?>(width * height) { null }
-            return Board(width, height, state, Array(6) { null }, true, 0, Move.NULL, promoteOptions)
-        }
-
-        fun boardWithPieces(width: Int, height: Int, promoteOptions: Set<PieceType>, vararg pieces: PieceWithPos): Board {
+        fun boardWithPieces(width: Int, height: Int, promoteOptions: Set<PieceType>, pockets: Array<Piece?>, vararg pieces: PieceWithPos): Board {
             val state = Array<Piece?>(width * height) { null }
             for (piece in pieces) {
                 if (piece.x < 0 || piece.y < 0 || piece.x >= width || piece.y >= height)
@@ -959,30 +953,7 @@ class Board(val width: Int, val height: Int, val state: Array<Piece?>, val pocke
                     throw IllegalArgumentException("Cell already occupied")
                 state[piece.y * width + piece.x] = piece.piece
             }
-            return Board(width, height, state, Array(6) { null }, true, 0, Move.NULL, promoteOptions)
-        }
-
-        fun boardFromString(str: String, promoteOptions: Set<PieceType>): Board {
-            val rows = str.split('/')
-            val height = rows.size
-            val width = rows[0].length
-            val state = Array<Piece?>(width * height) { null }
-            for (x in 0 until width) {
-                for (y in 0 until height) {
-                    var char = rows[y][x]
-                    if (char == '-') continue
-                    val isWhite: Boolean
-                    if (char.isUpperCase()) isWhite = true
-                    else {
-                        isWhite = false
-                        char = char.uppercaseChar()
-                    }
-                    val piece = PieceType.ALL_PIECES.firstOrNull { it.char == char }
-                    if (piece == null) throw IllegalArgumentException("Unknown piece character $char")
-                    state[y * width + x] = Piece(piece, isWhite, false, "") // TODO: identifiers
-                }
-            }
-            return Board(width, height, state, Array(6) { null }, true, 0, Move.NULL, promoteOptions)
+            return Board(width, height, state, pockets, true, 0, Move.NULL, promoteOptions)
         }
     }
 }

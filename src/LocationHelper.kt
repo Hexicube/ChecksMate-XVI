@@ -75,18 +75,25 @@ class LocationHelper {
             return !collected.contains(locStr)
         }
 
-        fun getLocationState(board: Board, location: String): LocationState {
+        fun getLocationState(board: Board, startBoard: Board, location: String): LocationState {
             if (collected.contains(location)) return LocationState.COLLECTED
             val locType = location.substringBefore(':')
+            val locName = location.substring(location.indexOf(':') + 2)
             when (locType) {
                 "Capture" -> {
-                    val piece = location.substring(location.indexOf(':') + 2)
-                    if (board.state.any { it != null && !it.isWhite && it.identifier == piece })
+                    if (board.state.any { it != null && !it.isWhite && it.identifier == locName })
                         return LocationState.AVAILABLE
                     return LocationState.UNREACHABLE
                 }
                 "Threaten" -> {
-                    // TODO: determine if available or hard
+                    val count = when (locName) {
+                        "Minor" -> board.numPieceTypes[3]
+                        "Major" -> board.numPieceTypes[5]
+                        "Queen" -> board.numPieceTypes[7]
+                        "King" -> board.numPieceTypes[9]
+                        else -> throw NotImplementedError()
+                    }
+                    if (count == 0) return LocationState.UNREACHABLE
                     return LocationState.AVAILABLE
                 }
                 "False Fork" -> {
@@ -106,7 +113,14 @@ class LocationHelper {
                     return LocationState.AVAILABLE
                 }
                 "Win" -> {
-                    // TODO: check on correct board
+                    val isCurrentBoard = startBoard == when (locName) {
+                        "Mini Board" -> BoardSetups.MINI_BOARD
+                        "FIDE Board" -> BoardSetups.FIDE
+                        "Wide Board" -> BoardSetups.WIDE
+                        else -> throw NotImplementedError()
+                    }
+                    if (!isCurrentBoard) return LocationState.UNREACHABLE
+                    // TODO: determine if hard
                     return LocationState.AVAILABLE
                 }
                 else -> throw NotImplementedError()

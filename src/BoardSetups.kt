@@ -1,6 +1,8 @@
 class BoardSetups {
     companion object {
         val TEST_ALL_PIECES = Board.boardWithPieces(12, 8, PieceType.ALL_PROMOTE,
+            // pockets
+            Array(6) { null },
             // TODO: all pieces here for both sides
             // white pawns
             PieceWithPos(Piece(PieceType.PAWN, true, false, ""), 0, 1),
@@ -40,6 +42,8 @@ class BoardSetups {
         )
 
         val MINI_BOARD = Board.boardWithPieces(6, 6, PieceType.FIDE_PROMOTE,
+            // pockets
+            Array(6) { null },
             // white pieces
             PieceWithPos(Piece(PieceType.KNIGHT, true, false, "Queenside Knight"), 0, 0),
             PieceWithPos(Piece(PieceType.BISHOP, true, false, "Queenside Bishop"), 1, 0),
@@ -71,6 +75,8 @@ class BoardSetups {
         )
 
         val FIDE = Board.boardWithPieces(8, 8, PieceType.FIDE_PROMOTE,
+            // pockets
+            Array(6) { null },
             // white pieces
             PieceWithPos(Piece(PieceType.ROOK, true, false, "Queenside Rook"), 0, 0),
             PieceWithPos(Piece(PieceType.KNIGHT, true, false, "Queenside Knight"), 1, 0),
@@ -110,6 +116,8 @@ class BoardSetups {
         )
 
         val WIDE = Board.boardWithPieces(10, 8, PieceType.FIDE_PROMOTE,
+            // pockets
+            Array(6) { null },
             // white pieces
             PieceWithPos(Piece(PieceType.ROOK, true, false, "Queenside Rook"), 0, 0),
             PieceWithPos(Piece(PieceType.KNIGHT, true, false, "Queenside Knight"), 1, 0),

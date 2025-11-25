@@ -36,16 +36,16 @@ class GameWindow : JFrame("ChecksMate XVI V0.1") {
 
         // right panel: list of checks
         checkList.layout = BoxLayout(checkList, BoxLayout.Y_AXIS)
-        refreshChecks()
+        refreshChecks(board.currentBoardType)
         mainContainer.add(checkList)
 
         contentPane = mainContainer
     }
 
-    fun refreshChecks() {
+    fun refreshChecks(boardType: Board) {
         checkList.removeAll()
         for (check in LocationHelper.ALL_CHECKS) {
-            val state = LocationHelper.getLocationState(board.getBoard(), check)
+            val state = LocationHelper.getLocationState(board.getBoard(), boardType, check)
             val col = when (state) {
                 LocationState.UNREACHABLE -> Color(125, 125, 125)
                 LocationState.HARD -> Color(255, 175, 175)
@@ -147,7 +147,8 @@ class ChessBoard(val frame: GameWindow) : JPanel() {
 
     private val validMoves = MoveList()
 
-    private var _board = BoardSetups.FIDE
+    var currentBoardType = BoardSetups.FIDE
+    private var _board = currentBoardType
     fun getBoard() = _board
     fun setBoard(value: Board) {
         _board = value
@@ -157,7 +158,7 @@ class ChessBoard(val frame: GameWindow) : JPanel() {
 
         if (_board.isWhiteToMove) LocationHelper.examineBoardPreMove(_board)
 
-        frame.refreshChecks()
+        frame.refreshChecks(currentBoardType)
         repaint()
 
         if (_board.isGameOver()) {
@@ -168,7 +169,7 @@ class ChessBoard(val frame: GameWindow) : JPanel() {
             // reset game after delay
             Timer().schedule(object : TimerTask() {
                 override fun run() {
-                    setBoard(BoardSetups.FIDE)
+                    setBoard(currentBoardType)
                 }
             }, 3000)
             return
@@ -187,14 +188,6 @@ class ChessBoard(val frame: GameWindow) : JPanel() {
     private var selectY = -1
 
     init {
-        //_board.pockets[0] = Piece(PieceType.PAWN, true, false, "")
-        //_board.pockets[1] = Piece(PieceType.BISHOP, true, false, "")
-        //_board.pockets[2] = Piece(PieceType.QUEEN, true, false, "")
-
-        //_board.pockets[3] = Piece(PieceType.PAWN, false, false, "")
-        //_board.pockets[4] = Piece(PieceType.BISHOP, false, false, "")
-        //_board.pockets[5] = Piece(PieceType.QUEEN, false, false, "")
-
         addMouseListener(object : MouseListener {
             override fun mouseClicked(p0: MouseEvent?) {}
             override fun mouseReleased(p0: MouseEvent?) {}
