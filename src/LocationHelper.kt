@@ -80,8 +80,7 @@ class LocationHelper {
             val withNull = board.nullMove()
             val moveList = MoveList()
             withNull.getMoves(moveList)
-            val moves = moveList.asArray()
-            for (move in moves) {
+            for (move in moveList) {
                 if (move.capture != -1) {
                     val piece = withNull.state[move.capture]!!
                     if (piece.isWhite) continue

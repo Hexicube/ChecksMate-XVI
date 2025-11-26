@@ -29,7 +29,7 @@ class SearchHelpers {
             var b = beta
             if (board.isWhiteToMove) {
                 value = Int.MIN_VALUE
-                val moves = moveList.asArray().sortedByDescending { moveComparator(board, it) }
+                val moves = moveList.sortedByDescending { moveComparator(board, it) }
                 for (move in moves) {
                     result = minimaxAlphaBeta(board.withMove(move), depth - 1, a, b, scoreFunc, moveComparator)
                     if (result.score > value) {
@@ -43,7 +43,7 @@ class SearchHelpers {
             }
             else {
                 value = Int.MAX_VALUE
-                val moves = moveList.asArray().sortedBy { moveComparator(board, it) }
+                val moves = moveList.sortedBy { moveComparator(board, it) }
                 for (move in moves) {
                     result = minimaxAlphaBeta(board.withMove(move), depth - 1, a, b, scoreFunc, moveComparator)
                     result.move = move

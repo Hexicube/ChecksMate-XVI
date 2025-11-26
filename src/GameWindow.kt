@@ -237,7 +237,7 @@ class ChessBoard(val frame: GameWindow) : JPanel() {
                     if (boardY < 0 || boardY >= _board.height) return
                     if (selectY == -1) {
                         val id = boardY * _board.width + boardX
-                        if (validMoves.asArray().any { it != null && it.start == id }) {
+                        if (validMoves.any { it.start == id }) {
                             selectX = boardX
                             selectY = boardY
                         }
@@ -245,15 +245,15 @@ class ChessBoard(val frame: GameWindow) : JPanel() {
                     else if (selectX == boardX && selectY == boardY) selectY = -1
                     else {
                         val movesFromStart =
-                            if (selectX == -1) validMoves.asArray().filter { it.start == -selectY }
-                            else validMoves.asArray().filter { it.start == selectY * _board.width + selectX }
+                            if (selectX == -1) validMoves.filter { it.start == -selectY }
+                            else validMoves.filter { it.start == selectY * _board.width + selectX }
                         val moveOptions = movesFromStart.filter { it.end == boardY * _board.width + boardX }
                         if (moveOptions.size > 1) {
                             val moveMap = HashMap<Move, String>()
                             moveOptions.forEach { move ->
                                 moveMap[move] = if (move.capture == -1) {
                                     if (move.promote == null) "Move"
-                                    else "Promote to " + move.promote.niceName
+                                    else "Promote to " + move.promote!!.niceName
                                 }
                                 else {
                                     val x = move.capture % _board.width
@@ -261,7 +261,7 @@ class ChessBoard(val frame: GameWindow) : JPanel() {
                                     val pieceName = _board.state[move.capture]!!.type.niceName
 
                                     if (move.promote == null) "Capture $pieceName at ${'A'+x}${y+1}"
-                                    else "Capture $pieceName at ${'A'+x}${y+1} and promote to " + move.promote.niceName
+                                    else "Capture $pieceName at ${'A'+x}${y+1} and promote to " + move.promote!!.niceName
                                 }
                             }
                             val values = moveMap.values.toTypedArray()
@@ -313,7 +313,7 @@ class ChessBoard(val frame: GameWindow) : JPanel() {
                 g.fillRect(x, y, CELL_SIZE, CELL_SIZE)
             }
             else {
-                val moves = validMoves.asArray().filter { it.end == cell }
+                val moves = validMoves.filter { it.end == cell }
                 val relevant = if (selectX == -1) moves.filter { it.start == -selectY } else moves.filter { it.start == selectY * _board.width + selectX }
                 if (relevant.size > 1) {
                     g.color = CELL_SPECIALMOVE

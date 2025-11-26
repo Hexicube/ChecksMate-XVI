@@ -1,10 +1,29 @@
 import kotlin.math.abs
 
-data class Move(val start: Int, val end: Int, val capture: Int = -1, val promote: PieceType? = null) {
+@JvmInline
+value class Move(val data: ULong) {
+    val start: Int
+        get() = data.toShort().toInt()
+    val end: Int
+        get() = (data shr 16).toShort().toInt()
+    val capture: Int
+        get() = (data shr 32).toShort().toInt()
+    val promote: PieceType?
+        get() = PieceType.ID_LOOKUP[(data shr 48).toShort().toInt()]
+    companion object {
+        fun fromInput(start: Int, end: Int, capture: Int = -1, promote: PieceType? = null): Move {
+            return Move((start.toUShort().toULong()) + (end.toUShort().toULong() shl 16) + (capture.toUShort().toULong() shl 32) + ((promote?.ID?.toULong()?.shl(48)) ?: 0UL))
+        }
+
+        val NULL = fromInput(-1, -1)
+    }
+}
+
+/*data class Move(val start: Int, val end: Int, val capture: Int = -1, val promote: PieceType? = null) {
     companion object {
         val NULL = Move(-1, -1)
     }
-}
+}*/
 
 class Board(val width: Int, val height: Int, val state: Array<Piece?>, val pockets: Array<Piece?>, val isWhiteToMove: Boolean, val curPly: Int, val priorMove: Move, val promoteOptions: Set<PieceType>) {
     val numPieceTypes = Array(10) { 0 }
@@ -76,21 +95,22 @@ class Board(val width: Int, val height: Int, val state: Array<Piece?>, val pocke
         var hit: Piece?
         for (x in 0 until width) {
             for (y in 0 until height) {
-                val piece = state[y * width + x]
+                val idx = y * width + x
+                val piece = state[idx]
                 if (piece == null) {
                     // pocket pieces
                     if (isWhiteToMove) {
                         if (y < height / 2) {
-                            if (pockets[0] != null) outList += Move(-1, y * width + x)
-                            if (pockets[1] != null) outList += Move(-2, y * width + x)
-                            if (pockets[2] != null) outList += Move(-3, y * width + x)
+                            if (pockets[0] != null) outList += Move.fromInput(-1, idx)
+                            if (pockets[1] != null) outList += Move.fromInput(-2, idx)
+                            if (pockets[2] != null) outList += Move.fromInput(-3, idx)
                         }
                     }
                     else {
                         if (y >= height / 2) {
-                            if (pockets[3] != null) outList += Move(-4, y * width + x)
-                            if (pockets[4] != null) outList += Move(-5, y * width + x)
-                            if (pockets[5] != null) outList += Move(-6, y * width + x)
+                            if (pockets[3] != null) outList += Move.fromInput(-4, idx)
+                            if (pockets[4] != null) outList += Move.fromInput(-5, idx)
+                            if (pockets[5] != null) outList += Move.fromInput(-6, idx)
                         }
                     }
                     continue
@@ -127,10 +147,10 @@ class Board(val width: Int, val height: Int, val state: Array<Piece?>, val pocke
                             if (hit != null && hit.isWhite != isWhiteToMove) {
                                 if (endY == 0 || endY == height - 1) {
                                     for (promote in promoteOptions) {
-                                        outList += Move(y * width + x, end, cap, promote = promote)
+                                        outList += Move.fromInput(idx, end, cap, promote = promote)
                                     }
                                 }
-                                else outList += Move(y * width + x, end, cap)
+                                else outList += Move.fromInput(idx, end, cap)
                             }
                         }
                         if (x + 1 < width) {
@@ -147,29 +167,29 @@ class Board(val width: Int, val height: Int, val state: Array<Piece?>, val pocke
                             if (hit != null && hit.isWhite != isWhiteToMove) {
                                 if (endY == 0 || endY == height - 1) {
                                     for (promote in promoteOptions) {
-                                        outList += Move(y * width + x, end, cap, promote = promote)
+                                        outList += Move.fromInput(idx, end, cap, promote = promote)
                                     }
                                 }
-                                else outList += Move(y * width + x, end, cap)
+                                else outList += Move.fromInput(idx, end, cap)
                             }
                         }
                         end = endY * width + x
                         if (state[end] == null) {
                             if (endY == 0 || endY == height - 1) {
                                 for (promote in promoteOptions) {
-                                    outList += Move(y * width + x, end, promote = promote)
+                                    outList += Move.fromInput(idx, end, promote = promote)
                                 }
                             }
-                            else outList += Move(y * width + x, end)
+                            else outList += Move.fromInput(idx, end)
                             if (!piece.hasMoved && doubleY >= 0 && doubleY < height) {
                                 end = doubleY * width + x
                                 if (state[end] == null) {
                                     if (doubleY == 0 || doubleY == height - 1) {
                                         for (promote in promoteOptions) {
-                                            outList += Move(y * width + x, end, promote = promote)
+                                            outList += Move.fromInput(idx, end, promote = promote)
                                         }
                                     }
-                                    else outList += Move(y * width + x, end)
+                                    else outList += Move.fromInput(idx, end)
                                 }
                             }
                         }
@@ -220,29 +240,29 @@ class Board(val width: Int, val height: Int, val state: Array<Piece?>, val pocke
                         if (hit != null && hit.isWhite != isWhiteToMove) {
                             if (endY == 0 || endY == height - 1) {
                                 for (promote in promoteOptions) {
-                                    outList += Move(y * width + x, end, cap, promote = promote)
+                                    outList += Move.fromInput(idx, end, cap, promote = promote)
                                 }
                             }
-                            else outList += Move(y * width + x, end, cap)
+                            else outList += Move.fromInput(idx, end, cap)
                         }
                         if (x > 0) {
                             end = endY * width + x - 1
                             if (state[end] == null) {
                                 if (endY == 0 || endY == height - 1) {
                                     for (promote in promoteOptions) {
-                                        outList += Move(y * width + x, end, promote = promote)
+                                        outList += Move.fromInput(idx, end, promote = promote)
                                     }
                                 }
-                                else outList += Move(y * width + x, end)
+                                else outList += Move.fromInput(idx, end)
                                 if (!piece.hasMoved && x > 1 && doubleY >= 0 && doubleY < height) {
                                     end = doubleY * width + x - 2
                                     if (state[end] == null) {
                                         if (doubleY == 0 || doubleY == height - 1) {
                                             for (promote in promoteOptions) {
-                                                outList += Move(y * width + x, end, promote = promote)
+                                                outList += Move.fromInput(idx, end, promote = promote)
                                             }
                                         }
-                                        else outList += Move(y * width + x, end)
+                                        else outList += Move.fromInput(idx, end)
                                     }
                                 }
                             }
@@ -252,19 +272,19 @@ class Board(val width: Int, val height: Int, val state: Array<Piece?>, val pocke
                             if (state[end] == null) {
                                 if (endY == 0 || endY == height - 1) {
                                     for (promote in promoteOptions) {
-                                        outList += Move(y * width + x, end, promote = promote)
+                                        outList += Move.fromInput(idx, end, promote = promote)
                                     }
                                 }
-                                else outList += Move(y * width + x, end)
+                                else outList += Move.fromInput(idx, end)
                                 if (!piece.hasMoved && x + 2 < width && doubleY >= 0 && doubleY < height) {
                                     end = doubleY * width + x + 2
                                     if (state[end] == null) {
                                         if (doubleY == 0 || doubleY == height - 1) {
                                             for (promote in promoteOptions) {
-                                                outList += Move(y * width + x, end, promote = promote)
+                                                outList += Move.fromInput(idx, end, promote = promote)
                                             }
                                         }
-                                        else outList += Move(y * width + x, end)
+                                        else outList += Move.fromInput(idx, end)
                                     }
                                 }
                             }
@@ -294,19 +314,19 @@ class Board(val width: Int, val height: Int, val state: Array<Piece?>, val pocke
                             // make a normal move before en-passant
                             if (endY == 0 || endY == height - 1) {
                                 for (promote in promoteOptions) {
-                                    outList += Move(y * width + x, end, promote = promote)
+                                    outList += Move.fromInput(idx, end, promote = promote)
                                 }
                             }
-                            else outList += Move(y * width + x, end)
+                            else outList += Move.fromInput(idx, end)
                             if (!piece.hasMoved && doubleY >= 0 && doubleY < height) {
                                 end = doubleY * width + x
                                 if (state[end] == null) {
                                     if (doubleY == 0 || doubleY == height - 1) {
                                         for (promote in promoteOptions) {
-                                            outList += Move(y * width + x, end, promote = promote)
+                                            outList += Move.fromInput(idx, end, promote = promote)
                                         }
                                     }
-                                    else outList += Move(y * width + x, end)
+                                    else outList += Move.fromInput(idx, end)
                                 }
                             }
                             // en-passant
@@ -319,10 +339,10 @@ class Board(val width: Int, val height: Int, val state: Array<Piece?>, val pocke
                         if (hit != null && hit.isWhite != isWhiteToMove) {
                             if (endY == 0 || endY == height - 1) {
                                 for (promote in promoteOptions) {
-                                    outList += Move(y * width + x, end, cap, promote = promote)
+                                    outList += Move.fromInput(idx, end, cap, promote = promote)
                                 }
                             }
-                            else outList += Move(y * width + x, end, cap)
+                            else outList += Move.fromInput(idx, end, cap)
                         }
                     }
                     PieceType.SERGEANT -> {
@@ -351,19 +371,19 @@ class Board(val width: Int, val height: Int, val state: Array<Piece?>, val pocke
                                 if (hit.isWhite != isWhiteToMove) {
                                     if (endY == 0 || endY == height - 1) {
                                         for (promote in promoteOptions) {
-                                            outList += Move(y * width + x, end, cap, promote = promote)
+                                            outList += Move.fromInput(idx, end, cap, promote = promote)
                                         }
                                     }
-                                    else outList += Move(y * width + x, end, cap)
+                                    else outList += Move.fromInput(idx, end, cap)
                                 }
                             }
                             else {
                                 if (endY == 0 || endY == height - 1) {
                                     for (promote in promoteOptions) {
-                                        outList += Move(y * width + x, end, promote = promote)
+                                        outList += Move.fromInput(idx, end, promote = promote)
                                     }
                                 }
-                                else outList += Move(y * width + x, end)
+                                else outList += Move.fromInput(idx, end)
                                 // en-passant
                                 if (pawnSkipX == x + dx && pawnSkipY == endY) {
                                     hit = state[priorMove.end]!!
@@ -371,10 +391,10 @@ class Board(val width: Int, val height: Int, val state: Array<Piece?>, val pocke
                                     if (hit.isWhite != isWhiteToMove) {
                                         if (endY == 0 || endY == height - 1) {
                                             for (promote in promoteOptions) {
-                                                outList += Move(y * width + x, end, cap, promote = promote)
+                                                outList += Move.fromInput(idx, end, cap, promote = promote)
                                             }
                                         }
-                                        else outList += Move(y * width + x, end, cap)
+                                        else outList += Move.fromInput(idx, end, cap)
                                     }
                                 }
                                 // two step
@@ -384,10 +404,10 @@ class Board(val width: Int, val height: Int, val state: Array<Piece?>, val pocke
                                         if (state[end] == null) {
                                             if (doubleY == 0 || doubleY == height - 1) {
                                                 for (promote in promoteOptions) {
-                                                    outList += Move(y * width + x, end, promote = promote)
+                                                    outList += Move.fromInput(idx, end, promote = promote)
                                                 }
                                             }
-                                            else outList += Move(y * width + x, end)
+                                            else outList += Move.fromInput(idx, end)
                                         }
                                     }
                                 }
@@ -598,12 +618,12 @@ class Board(val width: Int, val height: Int, val state: Array<Piece?>, val pocke
                 if (isSquareAttacked(x2, startY)) return null
             }
         }
-        return Move(startY * width + startX, startY * width + rookX)
+        return Move.fromInput(startY * width + startX, startY * width + rookX)
     }
     fun getSingleMove(start: Int, end: Int, canMove: Boolean = true, canCapture: Boolean = true): Move? {
-        val endPiece = state[end] ?: return if (canMove) Move(start, end) else null
+        val endPiece = state[end] ?: return if (canMove) Move.fromInput(start, end) else null
         if (endPiece.isWhite == isWhiteToMove) return null
-        return if (canCapture) Move(start, end, end) else null
+        return if (canCapture) Move.fromInput(start, end, end) else null
     }
     fun getKingMoves(list: MoveList, startX: Int, startY: Int) {
         var move: Move?
@@ -691,27 +711,27 @@ class Board(val width: Int, val height: Int, val state: Array<Piece?>, val pocke
             if (startY + b < height) {
                 end = (startY + b) * width + startX + a
                 hit = state[end]
-                if (hit == null) list += Move(start, end)
-                else if(hit.isWhite != isWhiteToMove) list += Move(start, end, end)
+                if (hit == null) list += Move.fromInput(start, end)
+                else if(hit.isWhite != isWhiteToMove) list += Move.fromInput(start, end, end)
             }
             if (startY - b >= 0) {
                 end = (startY - b) * width + startX + a
                 hit = state[end]
-                if (hit == null) list += Move(start, end)
-                else if(hit.isWhite != isWhiteToMove) list += Move(start, end, end)
+                if (hit == null) list += Move.fromInput(start, end)
+                else if(hit.isWhite != isWhiteToMove) list += Move.fromInput(start, end, end)
             }
             if (startX + b < width) {
                 if (startY + a < height) {
                     end = (startY + a) * width + startX + b
                     hit = state[end]
-                    if (hit == null) list += Move(start, end)
-                    else if(hit.isWhite != isWhiteToMove) list += Move(start, end, end)
+                    if (hit == null) list += Move.fromInput(start, end)
+                    else if(hit.isWhite != isWhiteToMove) list += Move.fromInput(start, end, end)
                 }
                 if (startY - a >= 0) {
                     end = (startY - a) * width + startX + b
                     hit = state[end]
-                    if (hit == null) list += Move(start, end)
-                    else if(hit.isWhite != isWhiteToMove) list += Move(start, end, end)
+                    if (hit == null) list += Move.fromInput(start, end)
+                    else if(hit.isWhite != isWhiteToMove) list += Move.fromInput(start, end, end)
                 }
             }
         }
@@ -719,27 +739,27 @@ class Board(val width: Int, val height: Int, val state: Array<Piece?>, val pocke
             if (startY + b < height) {
                 end = (startY + b) * width + startX - a
                 hit = state[end]
-                if (hit == null) list += Move(start, end)
-                else if(hit.isWhite != isWhiteToMove) list += Move(start, end, end)
+                if (hit == null) list += Move.fromInput(start, end)
+                else if(hit.isWhite != isWhiteToMove) list += Move.fromInput(start, end, end)
             }
             if (startY - b >= 0) {
                 end = (startY - b) * width + startX - a
                 hit = state[end]
-                if (hit == null) list += Move(start, end)
-                else if(hit.isWhite != isWhiteToMove) list += Move(start, end, end)
+                if (hit == null) list += Move.fromInput(start, end)
+                else if(hit.isWhite != isWhiteToMove) list += Move.fromInput(start, end, end)
             }
             if (startX - b >= 0) {
                 if (startY + a < height) {
                     end = (startY + a) * width + startX - b
                     hit = state[end]
-                    if (hit == null) list += Move(start, end)
-                    else if(hit.isWhite != isWhiteToMove) list += Move(start, end, end)
+                    if (hit == null) list += Move.fromInput(start, end)
+                    else if(hit.isWhite != isWhiteToMove) list += Move.fromInput(start, end, end)
                 }
                 if (startY - a >= 0) {
                     end = (startY - a) * width + startX - b
                     hit = state[end]
-                    if (hit == null) list += Move(start, end)
-                    else if(hit.isWhite != isWhiteToMove) list += Move(start, end, end)
+                    if (hit == null) list += Move.fromInput(start, end)
+                    else if(hit.isWhite != isWhiteToMove) list += Move.fromInput(start, end, end)
                 }
             }
         }
@@ -755,10 +775,10 @@ class Board(val width: Int, val height: Int, val state: Array<Piece?>, val pocke
             if (y < 0 || y >= height) break
             val hit = state[y * width + x]
             if (hit != null) {
-                if (hit.isWhite != white) list += Move(startY * width + startX, y * width + x, y * width + x)
+                if (hit.isWhite != white) list += Move.fromInput(startY * width + startX, y * width + x, y * width + x)
                 break
             }
-            list += Move(startY * width + startX, y * width + x)
+            list += Move.fromInput(startY * width + startX, y * width + x)
         }
     }
     fun getRookMoves(list: MoveList, startX: Int, startY: Int, white: Boolean) {
@@ -769,40 +789,40 @@ class Board(val width: Int, val height: Int, val state: Array<Piece?>, val pocke
             end = startY * width + x
             piece = state[end]
             if (piece == null) {
-                list += Move(start, end)
+                list += Move.fromInput(start, end)
                 continue
             }
-            if (piece.isWhite != white) list += Move(start, end, end)
+            if (piece.isWhite != white) list += Move.fromInput(start, end, end)
             break
         }
         for (x in startX + 1 until width) {
             end = startY * width + x
             piece = state[end]
             if (piece == null) {
-                list += Move(start, end)
+                list += Move.fromInput(start, end)
                 continue
             }
-            if (piece.isWhite != white) list += Move(start, end, end)
+            if (piece.isWhite != white) list += Move.fromInput(start, end, end)
             break
         }
         for (y in startY - 1 downTo 0) {
             end = y * width + startX
             piece = state[end]
             if (piece == null) {
-                list += Move(start, end)
+                list += Move.fromInput(start, end)
                 continue
             }
-            if (piece.isWhite != white) list += Move(start, end, end)
+            if (piece.isWhite != white) list += Move.fromInput(start, end, end)
             break
         }
         for (y in startY + 1 until height) {
             end = y * width + startX
             piece = state[end]
             if (piece == null) {
-                list += Move(start, end)
+                list += Move.fromInput(start, end)
                 continue
             }
-            if (piece.isWhite != white) list += Move(start, end, end)
+            if (piece.isWhite != white) list += Move.fromInput(start, end, end)
             break
         }
     }
@@ -816,10 +836,10 @@ class Board(val width: Int, val height: Int, val state: Array<Piece?>, val pocke
             end = y * width + x
             piece = state[end]
             if (piece == null) {
-                list += Move(start, end)
+                list += Move.fromInput(start, end)
                 continue
             }
-            if (piece.isWhite != white) list += Move(start, end, end)
+            if (piece.isWhite != white) list += Move.fromInput(start, end, end)
             break
         }
         y = startY
@@ -828,10 +848,10 @@ class Board(val width: Int, val height: Int, val state: Array<Piece?>, val pocke
             end = y * width + x
             piece = state[end]
             if (piece == null) {
-                list += Move(start, end)
+                list += Move.fromInput(start, end)
                 continue
             }
-            if (piece.isWhite != white) list += Move(start, end, end)
+            if (piece.isWhite != white) list += Move.fromInput(start, end, end)
             break
         }
         y = startY
@@ -840,10 +860,10 @@ class Board(val width: Int, val height: Int, val state: Array<Piece?>, val pocke
             end = y * width + x
             piece = state[end]
             if (piece == null) {
-                list += Move(start, end)
+                list += Move.fromInput(start, end)
                 continue
             }
-            if (piece.isWhite != white) list += Move(start, end, end)
+            if (piece.isWhite != white) list += Move.fromInput(start, end, end)
             break
         }
         y = startY
@@ -852,10 +872,10 @@ class Board(val width: Int, val height: Int, val state: Array<Piece?>, val pocke
             end = y * width + x
             piece = state[end]
             if (piece == null) {
-                list += Move(start, end)
+                list += Move.fromInput(start, end)
                 continue
             }
-            if (piece.isWhite != white) list += Move(start, end, end)
+            if (piece.isWhite != white) list += Move.fromInput(start, end, end)
             break
         }
     }

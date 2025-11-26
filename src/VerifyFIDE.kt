@@ -62,7 +62,8 @@ class FIDEWorker : SwingWorker<Unit, Unit>() {
 
         val movesLeft = ArrayList<BoardWithMove>(200)
         startingBoard.getMoves(moveList)
-        for (a in 0 until moveList.used) movesLeft.add(BoardWithMove(startingBoard, moveList[a]))
+
+        for (move in moveList) movesLeft.add(BoardWithMove(startingBoard, move))
 
         while (movesLeft.isNotEmpty()) {
             val nextMove = movesLeft.removeLast()
@@ -82,15 +83,14 @@ class FIDEWorker : SwingWorker<Unit, Unit>() {
             // 7 ply: short castle
             // 8 ply: checkmate
             // 9 ply: long castle
-            if (nextMove.board.curPly >= 6) continue
+            if (nextMove.board.curPly >= 8) continue
 
             val newBoard = nextMove.board.withMove(nextMove.move)
             moveList.reset()
             newBoard.getMoves(moveList)
-            val moves = moveList.asArray()
 
             // king is exposed
-            if (moves.any { move ->
+            if (moveList.any { move ->
                 if (move.capture == -1) false
                 else {
                     val piece = newBoard.state[move.capture]
@@ -100,7 +100,7 @@ class FIDEWorker : SwingWorker<Unit, Unit>() {
 
             // move ends in a valid state (3-fold repetition not checked)
             validMoves[nextMove.board.curPly]++
-            for (move in moves) movesLeft.add(BoardWithMove(newBoard, move))
+            for (move in moveList) movesLeft.add(BoardWithMove(newBoard, move))
         }
     }
 }
