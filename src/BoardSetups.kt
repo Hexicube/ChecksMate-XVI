@@ -163,5 +163,10 @@ class BoardSetups {
             PieceWithPos(Piece(PieceType.KNIGHT, false, false, "Kingside Knight"), 8, 7),
             PieceWithPos(Piece(PieceType.ROOK, false, false, "Kingside Rook"), 9, 7),
         )
+
+        // TODO: make this a dictionary and use the string key for checking items/locations
+        val ALL_BOARDS = setOf(
+            MINI_BOARD, FIDE, WIDE
+        )
     }
 }

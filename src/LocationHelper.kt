@@ -159,5 +159,7 @@ class LocationHelper {
             // TODO: AP stuff
             println("[COLLECT] $location")
         }
+
+        // TODO: function to load collected locations from AP
     }
 }

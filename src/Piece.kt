@@ -52,6 +52,9 @@ enum class PieceType(val ID: UShort, val char: Char, val niceName: String, val c
         val FIDE_PROMOTE = setOf(
             KNIGHT, BISHOP, ROOK, QUEEN
         )
+        val FIDE_PIECES = setOf(
+            PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING
+        )
 
         val ALL_PROMOTE = setOf(
             KNIGHT, BISHOP, ROOK, QUEEN,
