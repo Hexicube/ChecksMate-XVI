@@ -143,6 +143,7 @@ class ChessBoard(val frame: GameWindow) : JPanel() {
         )
 
         val CAPTURE = ImageIO.read(File("images/capture.png"))
+        val CASTLE = ImageIO.read(File("images/castle.png"))
     }
 
     private val validMoves = MoveList()
@@ -334,7 +335,17 @@ class ChessBoard(val frame: GameWindow) : JPanel() {
     fun drawPiece(g: Graphics, piece: Piece, x: Int, y: Int) {
         val image = (if (piece.isWhite) PIECE_ICONS_WHITE else PIECE_ICONS_BLACK)[piece.type.niceName]
         g.drawImage(image, x, y, CELL_SIZE, CELL_SIZE, null)
+        // TODO: toggle to disable capture indicators
         if (LocationHelper.needsToCollectPiece(piece)) g.drawImage(CAPTURE, x, y, CELL_SIZE, CELL_SIZE, null)
+        // TODO: toggle to disable castle indicators
+        if (!piece.hasMoved) {
+            if (piece.type.type == PieceClass.KING || piece.type.type == PieceClass.MAJOR) {
+                val otherType = if (piece.type.type == PieceClass.KING) PieceClass.MAJOR else PieceClass.KING
+                if (_board.state.any { it != null && it.isWhite == piece.isWhite && !it.hasMoved && it.type.type == otherType }) {
+                    g.drawImage(CASTLE, x, y, CELL_SIZE, CELL_SIZE, null)
+                }
+            }
+        }
     }
 
     override fun paint(g: Graphics?) {
