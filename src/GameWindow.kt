@@ -90,8 +90,8 @@ class ChessBoard(val frame: GameWindow) : JPanel() {
             "King" to ImageIO.read(File("images/white/FIDE/King.png")),
             // fairy pawns
             "Berolina" to ImageIO.read(File("images/white/PAWN/Berolina.png")),
-            "Soldier" to ImageIO.read(File("images/white/white.png")),
-            "Sergeant" to ImageIO.read(File("images/white/white.png")),
+            "Soldier" to ImageIO.read(File("images/white/PAWN/Soldier.png")),
+            "Sergeant" to ImageIO.read(File("images/white/PAWN/Sergeant.png")),
             // fairy minors
             "Camel" to ImageIO.read(File("images/white/white.png")),
             "Cleric" to ImageIO.read(File("images/white/white.png")),
@@ -120,8 +120,8 @@ class ChessBoard(val frame: GameWindow) : JPanel() {
             "King" to ImageIO.read(File("images/black/FIDE/King.png")),
             // fairy pawns
             "Berolina" to ImageIO.read(File("images/black/PAWN/Berolina.png")),
-            "Soldier" to ImageIO.read(File("images/black/black.png")),
-            "Sergeant" to ImageIO.read(File("images/black/black.png")),
+            "Soldier" to ImageIO.read(File("images/black/PAWN/Soldier.png")),
+            "Sergeant" to ImageIO.read(File("images/black/PAWN/Sergeant.png")),
             // fairy minors
             "Camel" to ImageIO.read(File("images/black/black.png")),
             "Cleric" to ImageIO.read(File("images/black/black.png")),
@@ -148,7 +148,7 @@ class ChessBoard(val frame: GameWindow) : JPanel() {
 
     private val validMoves = MoveList()
 
-    var currentBoardType = BoardSetups.FIDE
+    var currentBoardType = BoardSetups.TEST_ALL_PIECES
     private var _board = currentBoardType
     fun getBoard() = _board
     fun setBoard(value: Board) {

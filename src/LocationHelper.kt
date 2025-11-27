@@ -41,11 +41,12 @@ class LocationHelper {
         val ALL_CHECKS = PIECES union THREATS union STATES union PLACES union SURVIVAL union OTHER
 
         fun getCurrentBoardLocation(board: Board): String {
+            // TODO: use a BoardSetups dictionary to get the name rather than a static list
             return when (board) {
                 BoardSetups.MINI_BOARD -> "Mini Board"
                 BoardSetups.FIDE -> "FIDE Board"
                 BoardSetups.WIDE -> "Wide Board"
-                else -> throw NotImplementedError()
+                else -> ""
             }
         }
 
