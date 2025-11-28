@@ -94,9 +94,9 @@ class ChessBoard(val frame: GameWindow) : JPanel() {
             "Sergeant" to ImageIO.read(File("images/white/PAWN/Sergeant.png")),
             // fairy minors
             "Camel" to ImageIO.read(File("images/white/white.png")),
-            "Cleric" to ImageIO.read(File("images/white/white.png")),
+            "Cleric" to ImageIO.read(File("images/white/MINOR/Cleric.png")),
             "Phoenix" to ImageIO.read(File("images/white/white.png")),
-            "Tower" to ImageIO.read(File("images/white/white.png")),
+            "Tower" to ImageIO.read(File("images/white/MINOR/Tower.png")),
             "Common King" to ImageIO.read(File("images/white/MINOR/King.png")),
             // fairy majors
             "Archbishop" to ImageIO.read(File("images/white/MAJOR/Archbishop.png")),
@@ -109,7 +109,7 @@ class ChessBoard(val frame: GameWindow) : JPanel() {
             "Amazon" to ImageIO.read(File("images/white/QUEEN/Amazon.png")),
             // fairy kings
             "General" to ImageIO.read(File("images/white/white.png")),
-            "Royal Queen" to ImageIO.read(File("images/white/white.png"))
+            "Royal Queen" to ImageIO.read(File("images/white/KING/Queen.png"))
         )
         val PIECE_ICONS_BLACK = mapOf(
             "Pawn" to ImageIO.read(File("images/black/FIDE/Pawn.png")),
@@ -124,9 +124,9 @@ class ChessBoard(val frame: GameWindow) : JPanel() {
             "Sergeant" to ImageIO.read(File("images/black/PAWN/Sergeant.png")),
             // fairy minors
             "Camel" to ImageIO.read(File("images/black/black.png")),
-            "Cleric" to ImageIO.read(File("images/black/black.png")),
+            "Cleric" to ImageIO.read(File("images/black/MINOR/Cleric.png")),
             "Phoenix" to ImageIO.read(File("images/black/black.png")),
-            "Tower" to ImageIO.read(File("images/black/black.png")),
+            "Tower" to ImageIO.read(File("images/black/MINOR/Tower.png")),
             "Common King" to ImageIO.read(File("images/black/MINOR/King.png")),
             // fairy majors
             "Archbishop" to ImageIO.read(File("images/black/MAJOR/Archbishop.png")),
@@ -139,7 +139,7 @@ class ChessBoard(val frame: GameWindow) : JPanel() {
             "Amazon" to ImageIO.read(File("images/black/QUEEN/Amazon.png")),
             // fairy kings
             "General" to ImageIO.read(File("images/black/black.png")),
-            "Royal Queen" to ImageIO.read(File("images/black/black.png"))
+            "Royal Queen" to ImageIO.read(File("images/black/KING/Queen.png"))
         )
 
         val CAPTURE = ImageIO.read(File("images/capture.png"))

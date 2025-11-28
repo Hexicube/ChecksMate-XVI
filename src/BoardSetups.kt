@@ -3,7 +3,6 @@ class BoardSetups {
         val TEST_ALL_PIECES = Board.boardWithPieces(12, 8, PieceType.ALL_PROMOTE,
             // pockets
             Array(6) { null },
-            // TODO: all pieces here for both sides
             // white pawns
             PieceWithPos(Piece(PieceType.PAWN, true, false, ""), 0, 1),
             PieceWithPos(Piece(PieceType.BEROLINA, true, false, ""), 1, 1),
@@ -35,10 +34,36 @@ class BoardSetups {
             PieceWithPos(Piece(PieceType.GENERAL, true, false, ""), 6, 0),
             PieceWithPos(Piece(PieceType.CROWNQUEEN, true, false, ""), 7, 0),
 
-            // black king
+            // black pawns
+            PieceWithPos(Piece(PieceType.PAWN, false, false, ""), 0, 6),
+            PieceWithPos(Piece(PieceType.BEROLINA, false, false, ""), 1, 6),
+            PieceWithPos(Piece(PieceType.SOLDIER, false, false, ""), 2, 6),
+            PieceWithPos(Piece(PieceType.SERGEANT, false, false, ""), 3, 6),
+            // black minors
+            PieceWithPos(Piece(PieceType.KNIGHT, false, false, ""), 4, 6),
+            PieceWithPos(Piece(PieceType.BISHOP, false, false, ""), 5, 6),
+            PieceWithPos(Piece(PieceType.CAMEL, false, false, ""), 6, 6),
+            PieceWithPos(Piece(PieceType.CLERIC, false, false, ""), 7, 6),
+            PieceWithPos(Piece(PieceType.PHOENIX, false, false, ""), 8, 6),
+            PieceWithPos(Piece(PieceType.TOWER, false, false, ""), 9, 6),
+            PieceWithPos(Piece(PieceType.COMMONER, false, false, ""), 10, 6),
+            // black majors
+            PieceWithPos(Piece(PieceType.ROOK, false, false, ""), 0, 7),
+            PieceWithPos(Piece(PieceType.ARCHBISHOP, false, false, ""), 1, 7),
+            // black majors (kingside)
+            PieceWithPos(Piece(PieceType.LION, false, false, ""), 11, 7),
+            // black queens
+            PieceWithPos(Piece(PieceType.QUEEN, false, false, ""), 2, 7),
+            PieceWithPos(Piece(PieceType.ELEPHANT, false, false, ""), 3, 7),
+            PieceWithPos(Piece(PieceType.CHANCELLOR, false, false, ""), 4, 7),
+            // black queens (kingside)
+            PieceWithPos(Piece(PieceType.DRAGON, false, false, ""), 8, 7),
+            PieceWithPos(Piece(PieceType.AMAZON, false, false, ""), 9, 7),
+            PieceWithPos(Piece(PieceType.UNICORN, false, false, ""), 10, 7),
+            // black kings
             PieceWithPos(Piece(PieceType.KING, false, false, ""), 5, 7),
-            // debug berolina pawn
-            PieceWithPos(Piece(PieceType.BEROLINA, false, false, ""), 1, 3)
+            PieceWithPos(Piece(PieceType.GENERAL, false, false, ""), 6, 7),
+            PieceWithPos(Piece(PieceType.CROWNQUEEN, false, false, ""), 7, 7),
         )
 
         val MINI_BOARD = Board.boardWithPieces(6, 6, PieceType.FIDE_PROMOTE,
