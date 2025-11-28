@@ -4,7 +4,6 @@ import kotlin.math.min
 
 interface ChessAI {
     fun getName(): String
-    fun getDifficulty(): Int
     fun makeMove(board: Board): MoveResult
 }
 
@@ -62,15 +61,61 @@ class SearchHelpers {
 
 class AI1 : ChessAI {
     /*
-    AI Level 1:
-    - Simple minimax depth 6 ply with alpha-beta pruning for speed
-    - Evaluation is purely based on piece values
-    - Pieces in pocket are valued slightly higher, results in AI only using them to prevent losing material
+    AI Level 2:
+    - 4 ply depth, no extensions
+    - Evaluation is sum of pieces, non-pawns are worth double
+    - Random value added to prevent shuffling
+    */
+
+    override fun getName() = "AI Level 1"
+    override fun makeMove(board: Board): MoveResult {
+        return SearchHelpers.minimaxAlphaBeta(board, 4, Int.MIN_VALUE, Int.MAX_VALUE, getBoardScore, scoreMove)
+    }
+
+    private val rng = Random()
+    private val getBoardScore: (Board) -> Int = { board ->
+        var score = 0
+        for (a in 0 until board.state.size) {
+            val piece = board.state[a] ?: continue
+            val worth = if (piece.type.type == PieceClass.PAWN) 100 else 200
+            if (piece.isWhite) score += worth else score -= worth
+        }
+        for (a in 0 until board.pockets.size) {
+            val piece = board.pockets[a] ?: continue
+            val worth = if (piece.type.type == PieceClass.PAWN) 100 else 200
+            if (piece.isWhite) score += worth else score -= worth
+        }
+        score += rng.nextInt(10) // noise to shuffle moves
+        score
+    }
+
+    private val scoreMove: (Board, Move) -> Int = { board, move ->
+        var change = 0
+        if (move.promote != null) {
+            // promoting
+            if (board.isWhiteToMove) change++ else change--
+        }
+        if (move.capture != -1) {
+            // capture
+            val piece = board.state[move.capture]!!
+            val worth = if (piece.type.type == PieceClass.PAWN) 1 else 2
+            if (piece.isWhite) change -= worth else change += worth
+        }
+        change
+    }
+}
+
+class AI2 : ChessAI {
+    /*
+    AI Level 2:
+    - 4 ply depth, no extensions
+    - Evaluation is sum of piece values defined below
+    - Pieces in pocket are valued slightly higher (+15), results in AI only using them to prevent losing material
     - Random value added to prevent shuffling
     */
 
     companion object {
-        val PIECE_WORTH = mapOf(
+        private val PIECE_WORTH = mapOf(
             PieceType.PAWN to 100,
             PieceType.KNIGHT to 250,
             PieceType.BISHOP to 300,
@@ -102,8 +147,7 @@ class AI1 : ChessAI {
         )
     }
 
-    override fun getName() = "AI Level 1"
-    override fun getDifficulty() = 1
+    override fun getName() = "AI Level 2"
     override fun makeMove(board: Board): MoveResult {
         return SearchHelpers.minimaxAlphaBeta(board, 4, Int.MIN_VALUE, Int.MAX_VALUE, getBoardScore, scoreMove)
     }
@@ -121,7 +165,7 @@ class AI1 : ChessAI {
             val worth = PIECE_WORTH[piece.type]!! + 15 // slight value to keeping pocketed
             if (piece.isWhite) score += worth else score -= worth
         }
-        score += rng.nextInt(10) // noise to shuffle moves (will push A pawn and shuffle rook otherwise)
+        score += rng.nextInt(10) // noise to shuffle moves
         score
     }
 
