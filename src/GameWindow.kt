@@ -148,7 +148,8 @@ class ChessBoard(val frame: GameWindow) : JPanel() {
 
     private val validMoves = MoveList()
 
-    var currentBoardType = BoardSetups.TEST_ALL_PIECES
+    var currentBoardType = BoardSetups.FIDE
+    var currentAI: ChessAI = AI3()
     private var _board = currentBoardType
     fun getBoard() = _board
     fun setBoard(value: Board) {
@@ -178,8 +179,7 @@ class ChessBoard(val frame: GameWindow) : JPanel() {
 
         if (DEBUG_TWOPLAYER) return
         if (!_board.isWhiteToMove) Thread {
-            val theAI = AI1()
-            val move = theAI.makeMove(_board)
+            val move = currentAI.makeMove(_board)
             setBoard(_board.withMove(move.move))
             frame.scoreLabel.text = "AI score estimate: ${-move.score}" // AI is black
         }.start()
