@@ -8,6 +8,7 @@ import java.util.Timer
 import java.util.TimerTask
 import javax.imageio.ImageIO
 import javax.swing.*
+import kotlin.math.min
 
 fun main() {
     val window = GameWindow()
@@ -20,7 +21,8 @@ fun main() {
 class GameWindow : JFrame("ChecksMate XVI V0.1") {
     val scoreLabel = JLabel("AI score estimate: ?")
     val board = ChessBoard(this)
-    val checkList = JPanel() // TODO: nicer panel with fixed size
+    val checkList = JPanel()
+    val itemList = JPanel()
     init {
         val mainContainer = JPanel()
         mainContainer.layout = BoxLayout(mainContainer, BoxLayout.X_AXIS)
@@ -36,27 +38,50 @@ class GameWindow : JFrame("ChecksMate XVI V0.1") {
 
         // right panel: list of checks
         checkList.layout = BoxLayout(checkList, BoxLayout.Y_AXIS)
+        itemList.layout = BoxLayout(itemList, BoxLayout.Y_AXIS)
         refreshChecks(board.currentBoardType)
-        mainContainer.add(checkList)
+
+        val outerLists = JPanel()
+        outerLists.layout = BoxLayout(outerLists, BoxLayout.X_AXIS)
+        outerLists.add(checkList)
+        outerLists.add(itemList)
+
+        val scrollPane = JScrollPane(outerLists)
+        scrollPane.horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_NEVER
+        scrollPane.verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
+        scrollPane.preferredSize = Dimension(620, board.preferredSize.height)
+        mainContainer.add(scrollPane)
 
         contentPane = mainContainer
     }
 
     fun refreshChecks(boardType: Board) {
         checkList.removeAll()
+        itemList.removeAll()
         for (check in LocationHelper.ALL_CHECKS) {
             val state = LocationHelper.getLocationState(board.getBoard(), boardType, check)
-            val col = when (state) {
-                LocationState.UNREACHABLE -> Color(125, 125, 125)
-                LocationState.HARD -> Color(255, 175, 175)
-                LocationState.AVAILABLE -> Color(255, 255, 150)
-                LocationState.COLLECTED -> Color(150, 255, 150)
-            }
             // TODO: tooltips on hover to explain locations
-            val label = JLabel(check)
-            label.isOpaque = true
-            label.background = col
+            val label = InfoEntry()
+            label.setDisplay(check, when (state) {
+                LocationState.UNREACHABLE -> UIIcon.UNREACHABLE
+                LocationState.HARD -> UIIcon.HARD
+                LocationState.AVAILABLE -> UIIcon.AVAILABLE
+                LocationState.COLLECTED -> UIIcon.COLLECTED
+            })
             checkList.add(label)
+        }
+        for (itemPair in ItemHelper.ALL_ITEMS) {
+            val num = min(itemPair.value, ItemHelper.getItemCount(itemPair.key))
+            for (a in 0 until num) {
+                val label = InfoEntry()
+                label.setDisplay(itemPair.key, UIIcon.COLLECTED)
+                itemList.add(label)
+            }
+            for (a in num until itemPair.value) {
+                val label = InfoEntry()
+                label.setDisplay(itemPair.key, UIIcon.UNREACHABLE)
+                itemList.add(label)
+            }
         }
         checkList.validate()
     }
@@ -278,7 +303,7 @@ class ChessBoard(val frame: GameWindow) : JPanel() {
                                 val chosen = moveMap.entries.first { it.value == selected }.key
                                 selectX = -1
                                 selectY = -1
-                                if (_board.isWhiteToMove) LocationHelper.examineMove(_board, chosen)
+                                if (_board.isWhiteToMove) LocationHelper.examineMove(_board, currentBoardType, chosen)
                                 setBoard(_board.withMove(chosen))
                                 if (!_board.isWhiteToMove) LocationHelper.examineBoardPostMove(_board, currentBoardType)
                             }
@@ -286,7 +311,7 @@ class ChessBoard(val frame: GameWindow) : JPanel() {
                         else if (moveOptions.size == 1) {
                             selectX = -1
                             selectY = -1
-                            if (_board.isWhiteToMove) LocationHelper.examineMove(_board, moveOptions[0])
+                            if (_board.isWhiteToMove) LocationHelper.examineMove(_board, currentBoardType, moveOptions[0])
                             setBoard(_board.withMove(moveOptions[0]))
                             if (!_board.isWhiteToMove) LocationHelper.examineBoardPostMove(_board, currentBoardType)
                         }

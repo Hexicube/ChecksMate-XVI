@@ -5,6 +5,7 @@ enum class LocationState {
 class LocationHelper {
     companion object {
         val PIECES = listOf(
+            // specific pieces
             "Capture: Queenside Rook", "Capture: Queenside Knight", "Capture: Queenside Bishop",
             "Capture: Queenside Attendant", "Capture: Queen", "Capture: Kingside Attendant",
             "Capture: Kingside Bishop", "Capture: Kingside Knight", "Capture: Kingside Rook",
@@ -16,13 +17,21 @@ class LocationHelper {
             // TODO: more piece IDs for larger boards
         )
 
+        val PIECE_SETS = listOf(
+            // multiple of a piece type
+            "Capture Set: 2 Pawns", "Capture Set: 4 Pawns", "Capture Set: 6 Pawns", "Capture Set: 8 Pawns", "Capture Set: 10 Pawns",
+            "Capture Set: 2 Pieces", "Capture Set: 4 Pieces", "Capture Set: 6 Pieces", "Capture Set: 8 Pieces", "Capture Set: 10 Pieces",
+            "Capture Set: 2 Minors", "Capture Set: 2 Majors",
+            "Capture Set: 5 Total", "Capture Set: 10 Total", "Capture Set: 15 Total", "Capture Set: 20 Total"
+        )
+
         val THREATS = listOf(
             "Threaten: Minor", "Threaten: Major", "Threaten: Queen", "Threaten: King"
         )
 
-        val STATES = listOf(
-            "False Fork: 2", "False Fork: 3", "False Fork: Royal",
-            "True Fork: 2", "True Fork: 3", "True Fork: Royal"
+        val FORKS = listOf(
+            "Fork: False", "Fork: False Triplet", "Fork: False Royal",
+            "Fork: True", "Fork: True Triplet", "Fork: True Royal"
         )
 
         val PLACES = listOf(
@@ -34,11 +43,12 @@ class LocationHelper {
         )
 
         val OTHER = listOf(
-            "Win: Mini Board", "Win: FIDE Board", "Win: Wide Board"
+            "Win: Mini Board", "Win: FIDE Board", "Win: Wide Board",
             // TODO: larger boards
+            "Win Fast: 40 Turns", "Win Fast: 20 Turns"
         )
 
-        val ALL_CHECKS = PIECES union THREATS union STATES union PLACES union SURVIVAL union OTHER
+        val ALL_CHECKS = PIECES union PIECE_SETS union THREATS union FORKS union PLACES union SURVIVAL union OTHER
 
         fun getCurrentBoardLocation(board: Board): String {
             // TODO: use a BoardSetups dictionary to get the name rather than a static list
@@ -58,12 +68,55 @@ class LocationHelper {
             }
         }
 
-        fun examineMove(board: Board, move: Move) {
-            // used to check for captures
+        fun examineMove(board: Board, startBoard: Board, move: Move) {
+            // check for captures
             if (move.capture != -1) {
                 val piece = board.state[move.capture]!!
                 val locStr = "Capture: ${piece.identifier}"
                 if (PIECES.contains(locStr)) collectLocation(locStr)
+
+                // check for capture sets
+                var total = 1 // capturing this move
+                for (piece in board.state) {
+                    if (piece != null && !piece.isWhite) total--
+                }
+                for (piece in startBoard.state) {
+                    if (piece != null && !piece.isWhite) total++
+                }
+                var loc = "Capture Set: $total Total"
+                collectLocation(loc)
+                total = 1
+                val isPawn = piece.type.type == PieceClass.PAWN
+                for (piece in board.state) {
+                    if (piece != null && !piece.isWhite && ((piece.type.type == PieceClass.PAWN) == isPawn)) total--
+                }
+                for (piece in startBoard.state) {
+                    if (piece != null && !piece.isWhite && ((piece.type.type == PieceClass.PAWN) == isPawn)) total++
+                }
+                loc = "Capture Set: $total ${if (isPawn) "Pawns" else "Pieces"}"
+                collectLocation(loc)
+                if (piece.type.type == PieceClass.MINOR) {
+                    total = 1
+                    for (piece in board.state) {
+                        if (piece != null && !piece.isWhite && piece.type.type == PieceClass.MINOR) total--
+                    }
+                    for (piece in startBoard.state) {
+                        if (piece != null && !piece.isWhite && piece.type.type == PieceClass.MINOR) total++
+                    }
+                    loc = "Capture Set: $total Minors"
+                    collectLocation(loc)
+                }
+                if (piece.type.type == PieceClass.MAJOR) {
+                    total = 1
+                    for (piece in board.state) {
+                        if (piece != null && !piece.isWhite && piece.type.type == PieceClass.MAJOR) total--
+                    }
+                    for (piece in startBoard.state) {
+                        if (piece != null && !piece.isWhite && piece.type.type == PieceClass.MAJOR) total++
+                    }
+                    loc = "Capture Set: $total Majors"
+                    collectLocation(loc)
+                }
             }
         }
 
@@ -73,6 +126,13 @@ class LocationHelper {
                 if (board.isWhiteWin()) {
                     val boardLoc = getCurrentBoardLocation(startBoard)
                     collectLocation("Win: $boardLoc")
+                    val turns = board.curPly / 2
+                    for (loc in OTHER) {
+                        if (loc.startsWith("Win Fast: ")) {
+                            val locTime = loc.substring(10).substringBefore(' ').toInt()
+                            if (locTime <= turns) collectLocation(loc)
+                        }
+                    }
                 }
             }
             // king move to place
@@ -115,6 +175,10 @@ class LocationHelper {
                         return LocationState.AVAILABLE
                     return LocationState.UNREACHABLE
                 }
+                "Capture Set" -> {
+                    // TODO: determine what the set is
+                    return LocationState.UNREACHABLE
+                }
                 "Threaten" -> {
                     val count = when (locName) {
                         "Minor" -> board.numPieceTypes[3]
@@ -126,13 +190,9 @@ class LocationHelper {
                     if (count == 0) return LocationState.UNREACHABLE
                     return LocationState.AVAILABLE
                 }
-                "False Fork" -> {
+                "Fork" -> {
                     // TODO: determine if available or hard
                     return LocationState.AVAILABLE
-                }
-                "True Fork" -> {
-                    // TODO: determine if available or hard
-                    return LocationState.HARD
                 }
                 "King" -> {
                     // move king to specific places
@@ -147,6 +207,10 @@ class LocationHelper {
                     if (boardLoc != locName) return LocationState.UNREACHABLE
                     // TODO: determine if hard
                     return LocationState.AVAILABLE
+                }
+                "Win Fast" -> {
+                    // TODO: determine if hard
+                    return LocationState.UNREACHABLE
                 }
                 else -> throw NotImplementedError()
             }

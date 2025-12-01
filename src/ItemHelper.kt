@@ -1,41 +1,33 @@
 class ItemHelper {
     companion object {
-        val BOARDS = listOf(
-            // grant access to new boards
-            "Board: FIDE", "Board: Wide"
-        )
-
-        val STARTING_PIECES = listOf(
-            // allow setting up more pieces on the board
-            "Starting Piece: Pawn",  // x8 (+2 per)
-            "Starting Piece: Minor", // x5 (+2 per)
-            "Starting Piece: Major", // x6
-            "Starting Piece: Queen", // x4
-            "Starting Piece: King"   // x2 (+1 from initial state)
-        )
-
-        val PROGRESSIVES = listOf(
-            // swap the AI for a lower level version
-            "AI: Skill downgrade", // multiple
-            // swap an AI piece for one with lower value
-            "AI: Piece downgrade", // multiple
-            // swap an AI pocket piece for one with lower value, or remove it entirely
-            "AI: Pocket downgrade", // multiple
-            // add points to set up your board with
-            "Setup: More points", // multiple, +5 per
-            // allow placing pawns further on the board (initial allows rank 1/2)
-            "Setup: Advanced pawns", // x2 (up to rank 4)
-            // allow placing non-pawns further on the board (initial allows rank 1)
-            "Setup: Advanced pieces" // x1 (up to rank 2)
-        )
-
-        val UNLOCKS = listOf(
-            "Unlock: Pocket slot", // x3
-            "Unlock: Fairy Pawns",
-            "Unlock: Fairy Minors",
-            "Unlock: Fairy Majors",
-            "Unlock: Fairy Queens",
-            "Unlock: Fairy Kings",
+        val ALL_ITEMS = mapOf(
+            // new boards
+            "Board: FIDE" to 1,
+            "Board: Wide" to 1,
+            // additional quantity of start piece types
+            "Starting Piece: 2 Pawns" to 8, // +2 per
+            "Starting Piece: 2 Minors" to 5, // +2 per
+            "Starting Piece: Major" to 6,
+            "Starting Piece: Queen" to 4,
+            "Starting Piece: King" to 2, // +1 initial
+            // reduce AI level of opponent
+            "AI: Skill Downgrade" to 4, // planned 5 total levels
+            // swap out pieces for worse ones
+            "AI: Piece Downgrade" to 4, // unknown how many to use or if this will be split up
+            // more initial points to set up board with
+            "Setup: More Points" to 10, // +5 per
+            // further advanced pawns in setup
+            "Setup: Advanced Pawns" to 2, // max rank 4 (initial 2)
+            // further advanced pieces in setup
+            "Setup: Advanced Pieces" to 1, // max rank 2 (initial 1)
+            // unlocks a pocket slot
+            "Unlock: Pocket Slot" to 3,
+            // unlocks fairy piece types
+            "Unlock: Fairy Pawns" to 1,
+            "Unlock: Fairy Minors" to 1,
+            "Unlock: Fairy Majors" to 1,
+            "Unlock: Fairy Queens" to 1,
+            "Unlock: Fairy Kings" to 1
         )
 
         val collected = ArrayList<String>()
@@ -52,10 +44,10 @@ class ItemHelper {
         // helper functions
 
         fun getCostAllowance(): Int {
-            return getItemCount("Setup: More points") * 5 + 10
+            return getItemCount("Setup: More Points") * 5 + 10
         }
 
-        fun getPocketCount() = getItemCount("Unlock: Pocket slot")
+        fun getPocketCount() = getItemCount("Unlock: Pocket Slot")
 
         fun canUsePiece(type: PieceType): Boolean {
             if (PieceType.FIDE_PIECES.contains(type)) return true // start with standard pieces
@@ -126,8 +118,8 @@ class ItemHelper {
             var availQueen = getNumPieceClass(PieceClass.QUEEN)
             var availKing = getNumPieceClass(PieceClass.KING)
             var hasKing = false
-            val maxPawnRank = getItemCount("Setup: Advanced pawns") + 1
-            val maxPieceRank = getItemCount("Setup: Advanced pieces")
+            val maxPawnRank = getItemCount("Setup: Advanced Pawns") + 1
+            val maxPieceRank = getItemCount("Setup: Advanced Pieces")
             var maxPockets = getPocketCount()
             var possibleBoards = BoardSetups.ALL_BOARDS.filter {
                 it.width == board.width &&
