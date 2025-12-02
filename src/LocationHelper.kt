@@ -130,7 +130,7 @@ class LocationHelper {
                     for (loc in OTHER) {
                         if (loc.startsWith("Win Fast: ")) {
                             val locTime = loc.substring(10).substringBefore(' ').toInt()
-                            if (locTime <= turns) collectLocation(loc)
+                            if (turns < locTime) collectLocation(loc)
                         }
                     }
                 }
