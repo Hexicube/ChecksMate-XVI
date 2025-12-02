@@ -1,4 +1,5 @@
 import kotlin.math.abs
+import kotlin.math.min
 
 @JvmInline
 value class Move(val data: ULong) {
@@ -605,6 +606,97 @@ class Board(val width: Int, val height: Int, val state: Array<Piece?>, val pocke
             }
         }
         return false
+    }
+    fun getSquareCheapestDefender(x: Int, y: Int, white: Boolean): Int {
+        // finds the cheapest cost piece that can defend the given square directly, excluding kings
+        var piece: Piece?
+        var cheapest = 10000
+        // pawns
+        val dir = if (white) 1 else -1
+        val oneStep = y + dir
+        if (oneStep in 0 until height) {
+            if (x - 1 >= 0) {
+                piece = state[oneStep * width + (x - 1)]
+                if (piece != null && piece.isWhite == white) {
+                    if (piece.type == PieceType.PAWN) cheapest = min(cheapest, piece.type.cost)
+                    if (piece.type == PieceType.SERGEANT) cheapest = min(cheapest, piece.type.cost)
+                }
+            }
+            if (x + 1 < width) {
+                piece = state[oneStep * width + (x + 1)]
+                if (piece != null && piece.isWhite == white) {
+                    if (piece.type == PieceType.PAWN) cheapest = min(cheapest, piece.type.cost)
+                    if (piece.type == PieceType.SERGEANT) cheapest = min(cheapest, piece.type.cost)
+                }
+            }
+            piece = state[oneStep * width + x]
+            if (piece != null && piece.isWhite == white) {
+                if (piece.type == PieceType.BEROLINA) cheapest = min(cheapest, piece.type.cost)
+                if (piece.type == PieceType.SOLDIER) cheapest = min(cheapest, piece.type.cost)
+                if (piece.type == PieceType.SERGEANT) cheapest = min(cheapest, piece.type.cost)
+            }
+        }
+        // sliding and adjacent
+        for (dx in -1 .. 1) {
+            for (dy in -1 .. 1) {
+                if (dx == 0 && dy == 0) continue
+                var px = x
+                var py = y
+                var firstStep = true
+                while (true) {
+                    px += dx
+                    if (px < 0 || px >= width) break
+                    py += dy
+                    if (py < 0 || py >= height) break
+                    piece = state[py * width + px]
+                    if (piece == null) {
+                        firstStep = false
+                        continue
+                    }
+                    if (piece.isWhite == white) {
+                        if (firstStep) {
+                            if (piece.type == PieceType.COMMONER) cheapest = min(cheapest, piece.type.cost)
+                            if (dx == 0 || dy == 0) {
+                                if (piece.type == PieceType.PHOENIX) cheapest = min(cheapest, piece.type.cost)
+                                if (piece.type == PieceType.TOWER) cheapest = min(cheapest, piece.type.cost)
+                            }
+                            else {
+                                if (piece.type == PieceType.LION) cheapest = min(cheapest, piece.type.cost)
+                                if (piece.type == PieceType.ELEPHANT) cheapest = min(cheapest, piece.type.cost)
+                            }
+                        }
+                        if (piece.type == PieceType.QUEEN) cheapest = min(cheapest, piece.type.cost)
+                        if (piece.type == PieceType.AMAZON) cheapest = min(cheapest, piece.type.cost)
+                        if (dx == 0 || dy == 0) {
+                            if (piece.type == PieceType.ROOK) cheapest = min(cheapest, piece.type.cost)
+                            if (piece.type == PieceType.CHANCELLOR) cheapest = min(cheapest, piece.type.cost)
+                            if (piece.type == PieceType.DRAGON) cheapest = min(cheapest, piece.type.cost)
+                        }
+                        else {
+                            if (piece.type == PieceType.BISHOP) cheapest = min(cheapest, piece.type.cost)
+                            if (piece.type == PieceType.CLERIC) cheapest = min(cheapest, piece.type.cost)
+                            if (piece.type == PieceType.ARCHBISHOP) cheapest = min(cheapest, piece.type.cost)
+                        }
+                    }
+                    break
+                }
+            }
+        }
+        // knights
+        for (dx in -3 .. 3) {
+            val px = x + dx
+            if (px < 0) continue
+            if (px >= width) break
+            for (dy in -3 .. 3) {
+                val py = y + dy
+                if (py < 0) continue
+                if (py >= height) break
+                piece = state[py * width + px]
+                if (piece == null || piece.isWhite != white || piece.type == PieceType.GENERAL) continue
+                if (isEnemyJumper(piece, abs(dx), abs(dy), white)) cheapest = min(cheapest, piece.type.cost)
+            }
+        }
+        return cheapest
     }
     fun getCastlingMove(startX: Int, startY: Int, endX: Int, rookX: Int): Move? {
         // verifies the king is moving through safe squares

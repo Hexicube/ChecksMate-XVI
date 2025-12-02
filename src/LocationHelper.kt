@@ -187,13 +187,13 @@ class LocationHelper {
                 val attacks = ArrayList<Piece>()
                 for (move in pieceData.value) {
                     val hit = withNull.state[move.capture]!!
-                    if (hit.type.cost > thisWorth) attacks.add(hit)
+                    if (hit.type.cost > thisWorth || hit.type.type == PieceClass.KING) attacks.add(hit)
                     else {
-                        // TODO: check if unprotected
+                        val prot = board.getSquareCheapestDefender(move.capture % board.width, move.capture / board.width, false)
+                        if (prot == 10000) attacks.add(hit)
                     }
                 }
-                var cheapestProtector = 10000
-                // TODO: work out if this piece is protected (get the lowest value protector)
+                val cheapestProtector = board.getSquareCheapestDefender(pieceData.key.x, pieceData.key.y, true)
                 var trueAttack = true
                 val thisPos = pieceData.key.y * board.width + pieceData.key.x
                 for (move in moveList) {
@@ -280,6 +280,7 @@ class LocationHelper {
         val collected = ArrayList<String>()
         fun collectLocation(location: String) {
             if (collected.contains(location)) return
+            if (!ALL_CHECKS.contains(location)) return
             collected.add(location)
 
             // TODO: AP stuff
