@@ -69,6 +69,24 @@ class LocationHelper {
         }
 
         fun examineMove(board: Board, startBoard: Board, move: Move) {
+            // king move to place
+            val movedPiece = board.state[move.start]!!
+            if (movedPiece.type.type == PieceClass.KING) {
+                val turns = board.curPly / 2
+                val startY = move.start / board.width
+                val endX = move.end % board.width
+                val endY = move.end / board.width
+                if (turns < 5 && move.start >= 0) {
+                    if (endY > startY) collectLocation("King: Early Forward")
+                }
+                if (endX == 0 || endX == board.width - 1) {
+                    // make sure its not a castling move
+                    if (board.state[move.end] == null) collectLocation("King: To Edge")
+                }
+                if (endX == board.width / 2 || endX == board.width / 2 - 1) {
+                    if (endY == board.height / 2 || endY == board.height / 2 - 1) collectLocation("King: To Centre")
+                }
+            }
             // check for captures
             if (move.capture != -1) {
                 val piece = board.state[move.capture]!!
@@ -135,14 +153,19 @@ class LocationHelper {
                     }
                 }
             }
-            // king move to place
-            // TODO: check king position
             // threaten and fork
             val withNull = board.nullMove()
             val moveList = MoveList()
+            val capturesByPiece = HashMap<PieceWithPos, ArrayList<Move>>()
             withNull.getMoves(moveList)
             for (move in moveList) {
                 if (move.capture != -1) {
+                    val x = move.start % withNull.width
+                    val y = move.start / withNull.width
+                    val pos = PieceWithPos(withNull.state[move.start]!!, x, y)
+                    if (capturesByPiece.containsKey(pos)) capturesByPiece[pos]!!.add(move)
+                    else capturesByPiece[pos] = arrayListOf(move)
+
                     val piece = withNull.state[move.capture]!!
                     if (piece.isWhite) continue
                     val type = when(piece.type.type) {
@@ -155,7 +178,45 @@ class LocationHelper {
                     collectLocation("Threaten: $type")
                 }
             }
-            // TODO: look for forks
+            moveList.reset()
+            board.getMoves(moveList)
+            for (pieceData in capturesByPiece) {
+                if (pieceData.value.size < 2) continue // cant be a fork
+
+                val thisWorth = pieceData.key.piece.type.cost
+                val attacks = ArrayList<Piece>()
+                for (move in pieceData.value) {
+                    val hit = withNull.state[move.capture]!!
+                    if (hit.type.cost > thisWorth) attacks.add(hit)
+                    else {
+                        // TODO: check if unprotected
+                    }
+                }
+                var cheapestProtector = 10000
+                // TODO: work out if this piece is protected (get the lowest value protector)
+                var trueAttack = true
+                val thisPos = pieceData.key.y * board.width + pieceData.key.x
+                for (move in moveList) {
+                    if (move.capture == thisPos) {
+                        if ((thisWorth + cheapestProtector) >= board.state[move.start]!!.type.cost) {
+                            trueAttack = false
+                            break
+                        }
+                    }
+                }
+                if (attacks.size >= 2) {
+                    collectLocation("Fork: False")
+                    if (trueAttack) collectLocation("Fork: True")
+                    if (attacks.size >= 3) {
+                        collectLocation("Fork: False Triplet")
+                        if (trueAttack) collectLocation("Fork: True Triplet")
+                    }
+                    if (attacks.count { it.type.type == PieceClass.KING || it.type.type == PieceClass.QUEEN } >= 2) {
+                        collectLocation("Fork: False Royal")
+                        if (trueAttack) collectLocation("Fork: True Royal")
+                    }
+                }
+            }
         }
 
         fun needsToCollectPiece(piece: Piece): Boolean {
