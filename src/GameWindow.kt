@@ -39,7 +39,7 @@ class GameWindow : JFrame("ChecksMate XVI V0.1") {
         // right panel: list of checks
         checkList.layout = BoxLayout(checkList, BoxLayout.Y_AXIS)
         itemList.layout = BoxLayout(itemList, BoxLayout.Y_AXIS)
-        refreshChecks(board.currentBoardType)
+        refreshChecks(ChessBoard.currentBoardType)
 
         val outerLists = JPanel()
         outerLists.layout = BoxLayout(outerLists, BoxLayout.X_AXIS)
@@ -169,12 +169,13 @@ class ChessBoard(val frame: GameWindow) : JPanel() {
 
         val CAPTURE = ImageIO.read(File("images/capture.png"))
         val CASTLE = ImageIO.read(File("images/castle.png"))
+
+        var currentBoardType = BoardSetups.MINI_BOARD
+        var currentAI: ChessAI = AI3()
     }
 
     private val validMoves = MoveList()
 
-    var currentBoardType = BoardSetups.FIDE
-    var currentAI: ChessAI = AI3()
     private var _board = currentBoardType
     fun getBoard() = _board
     fun setBoard(value: Board) {

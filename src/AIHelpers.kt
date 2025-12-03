@@ -3,6 +3,7 @@ import kotlin.math.min
 
 interface ChessAI {
     fun getName(): String
+    fun getStrengthModifier(): Float
     fun makeMove(board: Board): MoveResult
 }
 

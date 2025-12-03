@@ -189,9 +189,13 @@ class BoardSetups {
             PieceWithPos(Piece(PieceType.ROOK, false, false, "Kingside Rook"), 9, 7),
         )
 
-        // TODO: make this a dictionary and use the string key for checking items/locations
-        val ALL_BOARDS = setOf(
-            MINI_BOARD, FIDE, WIDE
+        val ALL_BOARDS = mapOf(
+            "Mini" to MINI_BOARD,
+            "FIDE" to FIDE,
+            "Wide" to WIDE
         )
+
+        val BOARD_ENEMY_PIECE_TYPES =
+            ALL_BOARDS.values.associateWith { it.state.filterNotNull().filter { !it.isWhite }.map { it.identifier }.toSet() }
     }
 }

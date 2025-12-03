@@ -226,21 +226,52 @@ class LocationHelper {
             return !collected.contains(locStr)
         }
 
+        fun getEnemyPieceSum(board: Board): Int {
+            var count = 0
+            for (piece in board.state) {
+                if (piece != null && !piece.isWhite) count += piece.type.cost
+            }
+            return count
+        }
+
         fun getLocationState(board: Board, startBoard: Board, location: String): LocationState {
             if (collected.contains(location)) return LocationState.COLLECTED
             val locType = location.substringBefore(':')
             val locName = location.substring(location.indexOf(':') + 2)
             when (locType) {
                 "Capture" -> {
-                    if (board.state.any { it != null && !it.isWhite && it.identifier == locName })
-                        return LocationState.AVAILABLE
-                    return LocationState.UNREACHABLE
+                    var isAvailable = false
+                    val curValue = ItemHelper.getEffectiveCostAllowance()
+                    for (boardType in BoardSetups.ALL_BOARDS) {
+                        if (boardType.key == "Mini" || ItemHelper.getItemCount("Board: ${boardType.key}") > 0) {
+                            val reqValue = getEnemyPieceSum(boardType.value) * ChessBoard.currentAI.getStrengthModifier()
+                            val idents = BoardSetups.BOARD_ENEMY_PIECE_TYPES[boardType.value]!!
+                            for (id in idents) {
+                                if (id == locName) {
+                                    // pawns are always easy
+                                    if (id.contains("Pawn")) return LocationState.AVAILABLE
+                                    // check difficulty
+                                    if (curValue >= reqValue) return LocationState.AVAILABLE
+                                    isAvailable = true
+                                }
+                            }
+                        }
+                    }
+                    return if (isAvailable) LocationState.HARD else LocationState.UNREACHABLE
                 }
                 "Capture Set" -> {
                     // TODO: determine what the set is
+                    // TODO: go over all boards and calculate how many the player is expected to be able to capture
+                    // TODO: unreachable if no board has the quantity needed, hard if the player is not expected to capture them, available otherwise
+                    // PAWNS: requires as many pieces are there are pawns (non-pawns worth 2x)
+                    // MINORS: requires piece value of 3x piece count requires
+                    // MAJORS: requires 5x
+                    // TOTAL: requires 3x (assumes player will prioritise pawns)
                     return LocationState.UNREACHABLE
                 }
                 "Threaten" -> {
+                    // TODO: determine if the piece class is available on any unlocked board (mini board has no majors)
+                    // TODO: king/queen checks should be hard if player has no unlocks (excluding pawns)
                     val count = when (locName) {
                         "Minor" -> board.numPieceTypes[3]
                         "Major" -> board.numPieceTypes[5]
@@ -252,7 +283,10 @@ class LocationHelper {
                     return LocationState.AVAILABLE
                 }
                 "Fork" -> {
-                    // TODO: determine if available or hard
+                    // TODO: always hard if player has no unlocks or too few points
+                    // TODO: false forks are available if player has minors
+                    // TODO: true forks are available if player has majors or queens
+                    // TODO: royal forks (true or false) are available if the player has a decent advantage (2x? to afford throwing away pieces)
                     return LocationState.AVAILABLE
                 }
                 "King" -> {
@@ -260,18 +294,31 @@ class LocationHelper {
                     return LocationState.AVAILABLE
                 }
                 "Survive" -> {
-                    // TODO: determine if available or hard
-                    return LocationState.AVAILABLE
+                    val miniBoard = BoardSetups.MINI_BOARD // easiest board
+                    val reqValue = getEnemyPieceSum(miniBoard) * ChessBoard.currentAI.getStrengthModifier()
+                    val curValue = ItemHelper.getEffectiveCostAllowance()
+                    if (curValue >= reqValue) return LocationState.AVAILABLE
+                    // nonsense approximation for win speed: assume 50 turns with equal footing and a simple division
+                    val expectedTurns = (50f * curValue.toFloat() / reqValue).toInt()
+                    val locTurns = locName.substringBefore(' ').toInt()
+                    return if (expectedTurns >= locTurns) LocationState.AVAILABLE else LocationState.HARD
                 }
                 "Win" -> {
                     val boardLoc = getCurrentBoardLocation(startBoard)
                     if (boardLoc != locName) return LocationState.UNREACHABLE
-                    // TODO: determine if hard
-                    return LocationState.AVAILABLE
+                    val reqValue = getEnemyPieceSum(startBoard) * ChessBoard.currentAI.getStrengthModifier()
+                    val curValue = ItemHelper.getEffectiveCostAllowance()
+                    return if (curValue >= reqValue) LocationState.AVAILABLE else LocationState.HARD
                 }
                 "Win Fast" -> {
-                    // TODO: determine if hard
-                    return LocationState.UNREACHABLE
+                    val miniBoard = BoardSetups.MINI_BOARD // easiest board
+                    val reqValue = getEnemyPieceSum(miniBoard) * ChessBoard.currentAI.getStrengthModifier()
+                    val curValue = ItemHelper.getEffectiveCostAllowance()
+                    if (curValue <= reqValue) return LocationState.HARD
+                    // nonsense approximation for win speed: assume 50 turns with equal footing and a simple division
+                    val expectedTurns = (50f * reqValue / curValue.toFloat()).toInt()
+                    val locTurns = locName.substringBefore(' ').toInt()
+                    return if (expectedTurns <= locTurns) LocationState.AVAILABLE else LocationState.HARD
                 }
                 else -> throw NotImplementedError()
             }

@@ -1,3 +1,5 @@
+import kotlin.math.min
+
 class ItemHelper {
     companion object {
         val ALL_ITEMS = mapOf(
@@ -44,7 +46,21 @@ class ItemHelper {
         // helper functions
 
         fun getCostAllowance(): Int {
+            // NOTE: FIDE setup is 43pts, max points is 10x5+10=60pts
             return getItemCount("Setup: More Points") * 5 + 10
+        }
+
+        fun getEffectiveCostAllowance(): Int {
+            // used for location checks
+            val costAllowance = getCostAllowance()
+            // TODO: increase multipliers if fairy pieces are in play
+            val pieceAllowance =
+                getNumPieceClass(PieceClass.PAWN) +
+                getNumPieceClass(PieceClass.MINOR) * 3 +
+                getNumPieceClass(PieceClass.MAJOR) * 5 +
+                getNumPieceClass(PieceClass.QUEEN) * 8 +
+                getNumPieceClass(PieceClass.KING) * 5
+            return min(costAllowance, pieceAllowance)
         }
 
         fun getPocketCount() = getItemCount("Unlock: Pocket Slot")
@@ -77,14 +93,11 @@ class ItemHelper {
         }
 
         fun canUseBoard(board: Board): Boolean {
-            val boardName = when (board) {
-                BoardSetups.MINI_BOARD -> return true // start with mini board
-                BoardSetups.FIDE -> "FIDE"
-                BoardSetups.WIDE -> "Wide"
-                else -> throw IllegalArgumentException()
-            }
-
-            return getItemCount("Board: $boardName") > 0
+            val boards = BoardSetups.ALL_BOARDS.filter { it.value == board }
+            if (boards.isEmpty()) return false
+            val theBoard = boards.toList().first() // should only ever be one
+            if (theBoard.first == "Mini") return true
+            return getItemCount("Board: ${theBoard.first}") > 0
         }
 
         fun clearBoard(board: Board): Board {
@@ -109,6 +122,7 @@ class ItemHelper {
             - White pieces are placed within progressive advancement limits
             - White piece cost total does not exceed allowance
             - White pockets are unlocked if used
+            - White kings are all central and not pocket
             Returns null if valid, or the reason it failed
             */
             var availCost = getCostAllowance()
@@ -121,13 +135,13 @@ class ItemHelper {
             val maxPawnRank = getItemCount("Setup: Advanced Pawns") + 1
             val maxPieceRank = getItemCount("Setup: Advanced Pieces")
             var maxPockets = getPocketCount()
-            var possibleBoards = BoardSetups.ALL_BOARDS.filter {
+            var possibleBoards = BoardSetups.ALL_BOARDS.values.filter {
                 it.width == board.width &&
                 it.height == board.height &&
                 canUseBoard(it)
             }
 
-            fun checkPiece(piece: Piece, y: Int): String? {
+            fun checkPiece(piece: Piece, x: Int, y: Int): String? {
                 availCost -= piece.type.cost
                 if (availCost < 0) return "Over cost allowance"
                 when (piece.type.type) {
@@ -148,9 +162,11 @@ class ItemHelper {
                         if (y > maxPieceRank) return "Pieces too advanced"
                     }
                     PieceClass.KING -> {
-                        hasKing = true
+                        if (x == -1) return "King in pocket"
+                        if (x < 2 || x >= board.width - 2) return "King not central"
                         if (--availKing < 0) return "Too many kings"
                         if (y > maxPieceRank) return "Pieces too advanced"
+                        hasKing = true
                     }
                 }
                 return if (canUsePiece(piece.type)) null else "${piece.type.niceName} not unlocked"
@@ -168,7 +184,7 @@ class ItemHelper {
                         if (possibleBoards.isEmpty()) return "Board not unlocked"
                     }
                     else if (piece.isWhite) {
-                        val res = checkPiece(piece, y)
+                        val res = checkPiece(piece, x, y)
                         if (res != null) return res
                     }
                     else {
@@ -184,7 +200,7 @@ class ItemHelper {
                 val piece = board.pockets[a]
                 if (piece != null) {
                     if (--maxPockets < 0) return "Too many pocket pieces"
-                    val res = checkPiece(piece, 0)
+                    val res = checkPiece(piece, -1, 0)
                     if (res != null) return res
                 }
             }

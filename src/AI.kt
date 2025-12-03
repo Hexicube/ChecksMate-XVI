@@ -9,6 +9,7 @@ class AI1 : ChessAI {
     */
 
     override fun getName() = "AI Level 1"
+    override fun getStrengthModifier() = .5f
     override fun makeMove(board: Board): MoveResult {
         return AIHelpers.minimaxAlphaBeta(board, 4, 0, getBoardScore, scoreMove)
     }
@@ -56,6 +57,7 @@ class AI2 : ChessAI {
     */
 
     override fun getName() = "AI Level 2"
+    override fun getStrengthModifier() = .8f
     override fun makeMove(board: Board): MoveResult {
         return AIHelpers.minimaxAlphaBeta(board, 4, 0, getBoardScore, scoreMove)
     }
@@ -109,6 +111,7 @@ class AI3 : ChessAI {
     */
 
     override fun getName() = "AI Level 3"
+    override fun getStrengthModifier() = .9f
     override fun makeMove(board: Board): MoveResult {
         return AIHelpers.minimaxAlphaBeta(board, 4, 4, AI2.getBoardScore, AI2.scoreMove)
     }
