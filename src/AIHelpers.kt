@@ -10,36 +10,41 @@ interface ChessAI {
 data class MoveResult(var move: Move, val score: Int)
 class AIHelpers {
     companion object {
-        val PIECE_WORTH_SIMPLE = mapOf(
-            PieceType.PAWN to 100,
-            PieceType.KNIGHT to 250,
-            PieceType.BISHOP to 300,
-            PieceType.ROOK to 500,
-            PieceType.QUEEN to 800,
-            PieceType.KING to 400,
+        val PIECE_WORTH_SIMPLE: IntArray
+        init {
+            val simpleWorth = mapOf(
+                PieceType.PAWN to 100,
+                PieceType.KNIGHT to 250,
+                PieceType.BISHOP to 300,
+                PieceType.ROOK to 500,
+                PieceType.QUEEN to 800,
+                PieceType.KING to 400,
 
-            PieceType.BEROLINA to 100,
-            PieceType.SOLDIER to 100,
-            PieceType.SERGEANT to 150,
+                PieceType.BEROLINA to 100,
+                PieceType.SOLDIER to 100,
+                PieceType.SERGEANT to 150,
 
-            PieceType.CAMEL to 275,
-            PieceType.CLERIC to 325,
-            PieceType.PHOENIX to 300,
-            PieceType.TOWER to 200,
-            PieceType.COMMONER to 375,
+                PieceType.CAMEL to 275,
+                PieceType.CLERIC to 325,
+                PieceType.PHOENIX to 300,
+                PieceType.TOWER to 200,
+                PieceType.COMMONER to 375,
 
-            PieceType.ARCHBISHOP to 550,
-            PieceType.LION to 550,
+                PieceType.ARCHBISHOP to 550,
+                PieceType.LION to 550,
 
-            PieceType.UNICORN to 800,
-            PieceType.ELEPHANT to 925,
-            PieceType.CHANCELLOR to 950,
-            PieceType.DRAGON to 1100,
-            PieceType.AMAZON to 1250,
+                PieceType.UNICORN to 800,
+                PieceType.ELEPHANT to 925,
+                PieceType.CHANCELLOR to 950,
+                PieceType.DRAGON to 1100,
+                PieceType.AMAZON to 1250,
 
-            PieceType.GENERAL to 650,
-            PieceType.CROWNQUEEN to 1000
-        )
+                PieceType.GENERAL to 650,
+                PieceType.CROWNQUEEN to 1000
+            )
+            PIECE_WORTH_SIMPLE = IntArray(simpleWorth.size + 1)
+            simpleWorth.forEach { (piece, worth) -> PIECE_WORTH_SIMPLE[piece.ID.toInt()] = worth }
+        }
 
         private val moveList = MoveList()
         fun minimaxAlphaBeta(board: Board, depth: Int, extension: Int, scoreFunc: (Board) -> Int, moveComparator: (Board, Move) -> Int, alpha: Int = Int.MIN_VALUE, beta: Int = Int.MAX_VALUE): MoveResult {
@@ -61,7 +66,7 @@ class AIHelpers {
             var newExtension: Int
             if (board.isWhiteToMove) {
                 value = Int.MIN_VALUE
-                val moves = moveList.sortedByDescending { moveComparator(board, it) }
+                val moves = if (depth + extension <= 2) moveList.toList() else moveList.sortedByDescending { moveComparator(board, it) }
                 for (move in moves) {
                     if (move.capture == -1) {
                         if (depth <= 0) continue
@@ -84,7 +89,7 @@ class AIHelpers {
             }
             else {
                 value = Int.MAX_VALUE
-                val moves = moveList.sortedBy { moveComparator(board, it) }
+                val moves = if (depth + extension <= 2) moveList.toList() else moveList.sortedBy { moveComparator(board, it) }
                 for (move in moves) {
                     if (move.capture == -1) {
                         if (depth <= 0) continue

@@ -20,12 +20,6 @@ value class Move(val data: ULong) {
     }
 }
 
-/*data class Move(val start: Int, val end: Int, val capture: Int = -1, val promote: PieceType? = null) {
-    companion object {
-        val NULL = Move(-1, -1)
-    }
-}*/
-
 class Board(val width: Int, val height: Int, val state: Array<Piece?>, val pockets: Array<Piece?>, val isWhiteToMove: Boolean, val curPly: Int, val priorMove: Move, val promoteOptions: Set<PieceType>) {
     val numPieceTypes = Array(10) { 0 }
 
