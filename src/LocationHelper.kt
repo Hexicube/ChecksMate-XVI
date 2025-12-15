@@ -4,51 +4,93 @@ enum class LocationState {
 
 class LocationHelper {
     companion object {
-        val PIECES = listOf(
+        val PIECES = mapOf(
             // specific pieces
-            "Capture: Queenside Rook", "Capture: Queenside Knight", "Capture: Queenside Bishop",
-            "Capture: Queenside Attendant", "Capture: Queen", "Capture: Kingside Attendant",
-            "Capture: Kingside Bishop", "Capture: Kingside Knight", "Capture: Kingside Rook",
+             1 to "Capture: Queenside Rook",
+             2 to "Capture: Queenside Knight",
+             3 to "Capture: Queenside Bishop",
+             4 to "Capture: Queenside Attendant",
+             5 to "Capture: Queen",
+             7 to "Capture: Kingside Attendant",
+             8 to "Capture: Kingside Bishop",
+             9 to "Capture: Kingside Knight",
+            10 to "Capture: Kingside Rook",
 
-            "Capture: Queenside Rook Pawn", "Capture: Queenside Knight Pawn", "Capture: Queenside Bishop Pawn",
-            "Capture: Queenside Attendant Pawn", "Capture: Queen Pawn", "Capture: King Pawn", "Capture: Kingside Attendant Pawn",
-            "Capture: Kingside Bishop Pawn", "Capture: Kingside Knight Pawn", "Capture: Kingside Rook Pawn",
+            51 to "Capture: Queenside Rook Pawn",
+            52 to "Capture: Queenside Knight Pawn",
+            53 to "Capture: Queenside Bishop Pawn",
+            54 to "Capture: Queenside Attendant Pawn",
+            55 to "Capture: Queen Pawn",
+            56 to "Capture: King Pawn",
+            57 to "Capture: Kingside Attendant Pawn",
+            58 to "Capture: Kingside Bishop Pawn",
+            59 to "Capture: Kingside Knight Pawn",
+            60 to "Capture: Kingside Rook Pawn",
 
             // TODO: more piece IDs for larger boards
         )
 
-        val PIECE_SETS = listOf(
+        val PIECE_SETS = mapOf(
             // multiple of a piece type
-            "Capture Set: 2 Pawns", "Capture Set: 4 Pawns", "Capture Set: 6 Pawns", "Capture Set: 8 Pawns", "Capture Set: 10 Pawns",
-            "Capture Set: 2 Pieces", "Capture Set: 4 Pieces", "Capture Set: 6 Pieces", "Capture Set: 8 Pieces", "Capture Set: 10 Pieces",
-            "Capture Set: 2 Minors", "Capture Set: 2 Majors",
-            "Capture Set: 5 Total", "Capture Set: 10 Total", "Capture Set: 15 Total", "Capture Set: 20 Total"
+            101 to "Capture Set: 2 Pawns",
+            102 to "Capture Set: 4 Pawns",
+            103 to "Capture Set: 6 Pawns",
+            104 to "Capture Set: 8 Pawns",
+            105 to "Capture Set: 10 Pawns",
+
+            111 to "Capture Set: 2 Pieces",
+            112 to "Capture Set: 4 Pieces",
+            113 to "Capture Set: 6 Pieces",
+            114 to "Capture Set: 8 Pieces",
+            115 to "Capture Set: 10 Pieces",
+
+            121 to "Capture Set: 2 Minors",
+            122 to "Capture Set: 2 Majors",
+
+            131 to "Capture Set: 5 Total",
+            132 to "Capture Set: 10 Total",
+            133 to "Capture Set: 15 Total",
+            134 to "Capture Set: 20 Total"
         )
 
-        val THREATS = listOf(
-            "Threaten: Minor", "Threaten: Major", "Threaten: Queen", "Threaten: King"
+        val THREATS = mapOf(
+            151 to "Threaten: Minor",
+            152 to "Threaten: Major",
+            153 to "Threaten: Queen",
+            154 to "Threaten: King"
         )
 
-        val FORKS = listOf(
-            "Fork: False", "Fork: False Triplet", "Fork: False Royal",
-            "Fork: True", "Fork: True Triplet", "Fork: True Royal"
+        val FORKS = mapOf(
+            161 to "Fork: False",
+            162 to "Fork: False Triplet",
+            163 to "Fork: False Royal",
+            166 to "Fork: True",
+            167 to "Fork: True Triplet",
+            168 to "Fork: True Royal"
         )
 
-        val PLACES = listOf(
-            "King: Early Forward", "King: To Centre", "King: To Edge"
+        val PLACES = mapOf(
+            181 to "King: Early Forward",
+            182 to "King: To Centre",
+            183 to "King: To Edge"
         )
 
-        val SURVIVAL = listOf(
-            "Survive: 5 Turns", "Survive: 10 Turns", "Survive: 20 Turns"
+        val SURVIVAL = mapOf(
+            201 to "Survive: 5 Turns",
+            202 to "Survive: 10 Turns",
+            203 to "Survive: 20 Turns"
         )
 
-        val OTHER = listOf(
-            "Win: Mini Board", "Win: FIDE Board", "Win: Wide Board",
+        val OTHER = mapOf(
+            206 to "Win Fast: 40 Turns",
+            207 to "Win Fast: 20 Turns",
+            211 to "Win: Mini Board",
+            212 to "Win: FIDE Board",
+            213 to "Win: Wide Board"
             // TODO: larger boards
-            "Win Fast: 40 Turns", "Win Fast: 20 Turns"
         )
 
-        val ALL_CHECKS = PIECES union PIECE_SETS union THREATS union FORKS union PLACES union SURVIVAL union OTHER
+        val ALL_CHECKS = PIECES + PIECE_SETS + THREATS + FORKS + PLACES + SURVIVAL + OTHER
 
         fun getCurrentBoardLocation(board: Board): String {
             // TODO: use a BoardSetups dictionary to get the name rather than a static list
@@ -64,7 +106,7 @@ class LocationHelper {
             // survival
             if (!board.isGameOver()) {
                 val locStr = "Survive: ${board.curPly / 2} Turns"
-                if (SURVIVAL.contains(locStr)) collectLocation(locStr)
+                if (SURVIVAL.values.contains(locStr)) collectLocation(locStr)
             }
         }
 
@@ -91,7 +133,7 @@ class LocationHelper {
             if (move.capture != -1) {
                 val piece = board.state[move.capture]!!
                 val locStr = "Capture: ${piece.identifier}"
-                if (PIECES.contains(locStr)) collectLocation(locStr)
+                if (PIECES.values.contains(locStr)) collectLocation(locStr)
 
                 // check for capture sets
                 var total = 1 // capturing this move
@@ -145,7 +187,7 @@ class LocationHelper {
                     val boardLoc = getCurrentBoardLocation(startBoard)
                     collectLocation("Win: $boardLoc")
                     val turns = board.curPly / 2
-                    for (loc in OTHER) {
+                    for (loc in OTHER.values) {
                         if (loc.startsWith("Win Fast: ")) {
                             val locTime = loc.substring(10).substringBefore(' ').toInt()
                             if (turns < locTime) collectLocation(loc)
@@ -222,7 +264,7 @@ class LocationHelper {
         fun needsToCollectPiece(piece: Piece): Boolean {
             if (piece.isWhite) return false
             val locStr = "Capture: ${piece.identifier}"
-            if (!PIECES.contains(locStr)) return false
+            if (!PIECES.values.contains(locStr)) return false
             return !collected.contains(locStr)
         }
 
@@ -327,7 +369,7 @@ class LocationHelper {
         val collected = ArrayList<String>()
         fun collectLocation(location: String) {
             if (collected.contains(location)) return
-            if (!ALL_CHECKS.contains(location)) return
+            if (!ALL_CHECKS.values.contains(location)) return
             collected.add(location)
 
             // TODO: AP stuff

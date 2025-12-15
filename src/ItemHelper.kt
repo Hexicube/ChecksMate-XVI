@@ -32,6 +32,32 @@ class ItemHelper {
             "Unlock: Fairy Kings" to 1
         )
 
+        val ITEM_MAP = mapOf(
+            // boards
+            2 to "Board: FIDE",
+            3 to "Board: Wide",
+            // extra starting pieces
+            11 to "Starting Piece: 2 Pawns",
+            12 to "Starting Piece: 2 Minors",
+            13 to "Starting Piece: Major",
+            14 to "Starting Piece: Queen",
+            15 to "Starting Piece: King",
+            // AI downgrades
+            21 to "AI: Skill Downgrade",
+            22 to "AI: Piece Downgrade",
+            // setup bonuses
+            31 to "Setup: More Points",
+            32 to "Setup: Advanced Pawns",
+            33 to "Setup: Advanced Pieces",
+            // setup unlocks
+            41 to "Unlock: Pocket Slot",
+            42 to "Unlock: Fairy Pawns",
+            43 to "Unlock: Fairy Minors",
+            44 to "Unlock: Fairy Majors",
+            45 to "Unlock: Fairy Queens",
+            46 to "Unlock: Fairy Kings"
+        )
+
         val collected = ArrayList<String>()
         fun grantItem(item: String) {
             collected += item

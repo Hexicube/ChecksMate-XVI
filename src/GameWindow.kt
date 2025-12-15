@@ -59,10 +59,10 @@ class GameWindow : JFrame("ChecksMate XVI V0.1") {
         checkList.removeAll()
         itemList.removeAll()
         for (check in LocationHelper.ALL_CHECKS) {
-            val state = LocationHelper.getLocationState(board.getBoard(), boardType, check)
+            val state = LocationHelper.getLocationState(board.getBoard(), boardType, check.value)
             // TODO: tooltips on hover to explain locations
             val label = InfoEntry()
-            label.setDisplay(check, when (state) {
+            label.setDisplay(check.value, when (state) {
                 LocationState.UNREACHABLE -> UIIcon.UNREACHABLE
                 LocationState.HARD -> UIIcon.HARD
                 LocationState.AVAILABLE -> UIIcon.AVAILABLE
