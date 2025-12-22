@@ -94,12 +94,5 @@ def get_location_names_with_ids(location_names: list[str]) -> dict[str, int | No
     return {location_name: LOCATION_NAME_TO_ID[location_name] for location_name in location_names}
 
 def create_all_locations(world: APChecksMateXVI) -> None:
-    create_regular_locations(world)
-    create_events(world)
-
-def create_regular_locations(world: APChecksMateXVI) -> None:
     region = world.get_region("Game")
     region.add_location(LOCATION_NAME_TO_ID, ChecksMateLocation)
-
-def create_events(world: APChecksMateXVI) -> None:
-    

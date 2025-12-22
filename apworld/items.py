@@ -56,7 +56,7 @@ DEFAULT_ITEM_CLASSIFICATIONS = {
     "Board: Wide": ItemClassification.progression,
 }
 
-class ChecksMateItem(Item):
+class APChecksMateXVIItem(Item):
     game = "ChecksMate XVI"
 
 def get_random_filler_item_name(world: APChecksMateXVI) -> str:

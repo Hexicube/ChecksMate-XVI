@@ -9,13 +9,8 @@ if TYPE_CHECKING:
     from .world import APChecksMateXVI
 
 def set_all_rules(world: APChecksMateXVI) -> None:
-    set_all_entrance_rules(world)
     set_all_location_rules(world)
     set_completion_condition(world)
-
-
-def set_all_entrance_rules(world: APChecksMateXVI) -> None:
-    
 
 PIECE_BOARDS = {
     "Queenside Rook": ["FIDE", "Wide"],

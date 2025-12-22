@@ -1,6 +1,6 @@
 {
-	"game": "APQuest",
+	"game": "ChecksMate XVI",
 	"minimum_ap_version": "0.6.4",
-	"world_version": "1.0.1",
-	"authors": ["NewSoupVi"]
+	"world_version": "1.0.0",
+	"authors": ["Hexicube"]
 }
