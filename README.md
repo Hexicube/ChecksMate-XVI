@@ -30,7 +30,7 @@ A chess game for Archipelago, featuring:
 
 ## TODO List
 
-- Implement AI levels 4 and 5 (proper board evaluation rather than sum of piece values)
+- Implement AI level 5 (proper board evaluation rather than sum of piece values)
 - Come up with starting positions for the AI for various board sizes
   - 6x10 with two pawn layers consisting of soldiers and sergeants
   - 8x8 "pawn storm" with three layers (including piece layer) of pawns
@@ -38,14 +38,6 @@ A chess game for Archipelago, featuring:
 - Reduce max board size to 10x10 (or higher if other starting positions need it)
 - Implement a board editor for setting up pieces/pockets prior to starting, with a cost allowance (pockets are +2 cost)
   - Add rule to checker that prohibits kings on outer two files (castling logic breaks)
-- Add Archipelago locations/items
-  - Items:
-    - AI downgrading
-    - AI piece worsening
-    - More currency for board editor
-    - Ability to do various things in board editor (unlock pockets, piece types, etc.)
-    - Ability to promote to better pieces
-- Modify board renderer to show various locations that are available (such as an attack indicator on any piece that is a location)
 - Get images for the remaining fairy pieces that lack one
 - Help window to explain how pieces move, what locations there are, and what items will do when received
 - Add mouseover text to locations/items to describe them
